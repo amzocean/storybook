@@ -1,7 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+
+const STORY_CTAS = [
+  '💡 I Have a Story Idea!',
+  '✨ Imagine a Story!',
+  '🌟 Create a Story!',
+];
 
 interface Story {
   id: string;
@@ -30,6 +36,7 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedReader, setSelectedReader] = useState<string>('all');
   const [loading, setLoading] = useState(true);
+  const storyCta = useMemo(() => STORY_CTAS[Math.floor(Math.random() * STORY_CTAS.length)], []);
 
   const readerLevels = [
     { id: 'all', label: '🌟 All Levels', levels: [] as number[] },
@@ -103,7 +110,7 @@ export default function HomePage() {
               className="px-4 sm:px-6 py-2.5 sm:py-3 bg-yellow-400 hover:bg-yellow-300 text-gray-900 rounded-full text-sm sm:text-base font-extrabold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 animate-pulse hover:animate-none"
               title="Create Story"
             >
-              ✏️ <span className="hidden sm:inline">Write a Story!</span>
+              ✏️ <span className="hidden sm:inline">{storyCta}</span>
             </Link>
           </div>
         </div>
@@ -216,7 +223,7 @@ export default function HomePage() {
               href="/admin/create"
               className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-bold rounded-full text-lg shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all"
             >
-              ✏️ I Want to Write a Story!
+              {storyCta}
             </Link>
           </div>
         ) : filteredStories.length === 0 ? (
