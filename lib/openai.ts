@@ -4,15 +4,24 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
 });
 
-export async function generateStoryOutline(premise: string, category: string, pageCount: number = 6, title: string = '') {
+export async function generateStoryOutline(premise: string, category: string, pageCount: number = 6, title: string = '', detailLevel: number = 3) {
+  const detailMap: Record<number, { sentences: string; vocab: string; ageLabel: string }> = {
+    1: { sentences: '1 simple sentence', vocab: 'very simple words a toddler would understand', ageLabel: 'ages 2-3' },
+    2: { sentences: '2 short sentences', vocab: 'simple words for early readers', ageLabel: 'ages 4-5' },
+    3: { sentences: '3-4 sentences forming a descriptive paragraph', vocab: 'age-appropriate vocabulary', ageLabel: 'ages 5-7' },
+    4: { sentences: '4-5 rich, descriptive sentences', vocab: 'slightly advanced but accessible vocabulary', ageLabel: 'ages 7-9' },
+    5: { sentences: '5-6 detailed sentences with vivid descriptions', vocab: 'expressive vocabulary with some challenging words', ageLabel: 'ages 8-10' },
+  };
+  const detail = detailMap[detailLevel] || detailMap[3];
+
   const response = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [
       {
         role: 'system',
-        content: `You are a children's storybook author. Create engaging, age-appropriate stories for kids aged 5-8. 
-        Stories should have clear morals, colorful descriptions perfect for illustration, and simple vocabulary.
-        Keep each page to 2-3 short sentences maximum.
+        content: `You are a children's storybook author. Create engaging, age-appropriate stories for ${detail.ageLabel}. 
+        Stories should have clear morals, colorful descriptions perfect for illustration, and ${detail.vocab}.
+        Each page MUST have exactly ${detail.sentences} — this is critical, do not write less.
         
         IMPORTANT RULES:
         1. If the title or premise contains a person's name, that MUST be the main character's name. 
@@ -22,10 +31,11 @@ export async function generateStoryOutline(premise: string, category: string, pa
       },
       {
         role: 'user',
-        content: `Create a ${pageCount}-page children's storybook.
+        content: `Create a ${pageCount}-page children's storybook for ${detail.ageLabel}.
         Title: "${title}"
         Premise: "${premise}"
         Category: ${category}
+        Detail: Each page must have ${detail.sentences}. This is the most important formatting rule.
         
         Return a JSON object with:
         - "characterSheet": an object describing the main character's visual appearance for consistent illustrations:
@@ -34,7 +44,7 @@ export async function generateStoryOutline(premise: string, category: string, pa
           - "style": the art style to use (e.g., "Pixar-style 3D cartoon" or "bright watercolor storybook illustration")
         - "pages": an array of exactly ${pageCount} objects, each having:
           - "pageNumber": number (1-based)
-          - "text": the story text for that page (2-3 short sentences, simple words). Use the character's REAL name, never a substitute.
+          - "text": the story text for that page (${detail.sentences} — NOT fewer). Use the character's REAL name, never a substitute.
           - "imageDescription": a vivid description of what the illustration should show. ALWAYS include the character's full appearance description (from characterSheet) so every illustration looks the same. Describe pose, setting, and action but keep the character's look identical.
         
         Make it fun, colorful, and with a positive message at the end!
@@ -56,7 +66,7 @@ export async function regeneratePageText(currentText: string, instruction: strin
       {
         role: 'system',
         content: `You are a children's storybook author. Rewrite the given page text based on the user's instruction. 
-        Keep it age-appropriate for kids 5-8, 2-3 short sentences max.`
+        Keep it age-appropriate for kids 5-8, 3-4 descriptive sentences per page.`
       },
       {
         role: 'user',

@@ -11,6 +11,8 @@ interface Story {
   cover_image: string;
   page_count: number;
   tags: string;
+  detail_level: number;
+  age_range: string;
 }
 
 interface Category {
@@ -24,7 +26,17 @@ export default function HomePage() {
   const [stories, setStories] = useState<Story[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedReader, setSelectedReader] = useState<string>('all');
   const [loading, setLoading] = useState(true);
+
+  const readerLevels = [
+    { id: 'all', label: '🌟 All Levels', levels: [] as number[] },
+    { id: 'toddler', label: '🍼 Toddler', levels: [1] },
+    { id: 'early', label: '🧒 Early Reader', levels: [2] },
+    { id: 'storytime', label: '📖 Story Time', levels: [3] },
+    { id: 'chapter', label: '📚 Chapter', levels: [4] },
+    { id: 'advanced', label: '🎓 Advanced', levels: [5] },
+  ];
 
   useEffect(() => {
     Promise.all([
@@ -37,9 +49,12 @@ export default function HomePage() {
     });
   }, []);
 
-  const filteredStories = selectedCategory === 'all'
-    ? stories
-    : stories.filter(s => s.category === selectedCategory);
+  const filteredStories = stories.filter(s => {
+    const catMatch = selectedCategory === 'all' || s.category === selectedCategory;
+    const readerMatch = selectedReader === 'all' || 
+      readerLevels.find(r => r.id === selectedReader)?.levels.includes(s.detail_level || 3);
+    return catMatch && readerMatch;
+  });
 
   const getCategoryInfo = (catId: string) => categories.find(c => c.id === catId);
 
@@ -133,7 +148,7 @@ export default function HomePage() {
       ) : null}
 
       {/* Category Filter */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-2">
         <h2 className="text-xl sm:text-2xl font-extrabold text-gray-700 mb-3 sm:mb-4">🗂️ Pick a Category!</h2>
         <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-3 hide-scrollbar">
           <button
@@ -158,6 +173,26 @@ export default function HomePage() {
               style={selectedCategory === cat.id ? { backgroundColor: cat.color } : {}}
             >
               {cat.emoji} {cat.name}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Reader Level Filter */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-4 sm:pb-6">
+        <h2 className="text-lg sm:text-xl font-extrabold text-gray-700 mb-2 sm:mb-3">📏 Reader Level</h2>
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-3 hide-scrollbar">
+          {readerLevels.map(level => (
+            <button
+              key={level.id}
+              onClick={() => setSelectedReader(level.id)}
+              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-sm whitespace-nowrap transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 ${
+                selectedReader === level.id
+                  ? 'bg-purple-500 text-white ring-4 ring-purple-200'
+                  : 'bg-white text-gray-600 hover:bg-purple-50'
+              }`}
+            >
+              {level.label}
             </button>
           ))}
         </div>
@@ -208,6 +243,11 @@ export default function HomePage() {
                         </div>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                      <div className="absolute top-2 right-2">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-white/90 text-gray-700 font-bold shadow">
+                          {story.age_range ? `Ages ${story.age_range}` : 'Ages 5-7'}
+                        </span>
+                      </div>
                       <div className="absolute bottom-0 p-3 sm:p-4">
                         <span
                           className="text-xs px-2 py-0.5 rounded-full text-white font-bold mb-1.5 inline-block"

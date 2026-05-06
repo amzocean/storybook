@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
   try {
     switch (action) {
       case 'outline': {
-        const { premise, category, pageCount, title } = body;
-        const result = await generateStoryOutline(premise, category, pageCount || 6, title || '');
+        const { premise, category, pageCount, title, detailLevel } = body;
+        const result = await generateStoryOutline(premise, category, pageCount || 6, title || '', detailLevel || 3);
         // New format returns { characterSheet, pages } — extract both
         const outline = result.pages || result;
         const characterSheet = result.characterSheet || null;

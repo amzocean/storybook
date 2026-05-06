@@ -17,7 +17,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { id, title, description, category, tags, cover_image, age_range, status } = body;
+  const { id, title, description, category, tags, cover_image, detail_level, status } = body;
+
+  const ageRangeMap: Record<number, string> = {
+    1: '2-3', 2: '4-5', 3: '5-7', 4: '7-9', 5: '8-10',
+  };
+  const age_range = ageRangeMap[detail_level] || '5-7';
 
   const { error } = await supabase.from('stories').insert({
     id,
@@ -26,7 +31,8 @@ export async function POST(request: NextRequest) {
     category,
     tags: tags || [],
     cover_image,
-    age_range: age_range || '5-8',
+    age_range,
+    detail_level: detail_level || 3,
     status: status || 'draft',
   });
 

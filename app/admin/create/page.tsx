@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import StarCatcher from '@/app/components/StarCatcher';
 
 interface PageDraft {
   pageNumber: number;
@@ -34,6 +35,7 @@ export default function CreateStoryPage() {
   const [premise, setPremise] = useState('');
   const [category, setCategory] = useState('adventure');
   const [pageCount, setPageCount] = useState(6);
+  const [detailLevel, setDetailLevel] = useState(3);
   const [title, setTitle] = useState('');
 
   // Step 2: Outline
@@ -101,7 +103,7 @@ export default function CreateStoryPage() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'outline', premise, category, pageCount, title }),
+        body: JSON.stringify({ action: 'outline', premise, category, pageCount, title, detailLevel }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -206,6 +208,7 @@ export default function CreateStoryPage() {
         body: JSON.stringify({
           id: storyId, title, description: premise, category,
           tags: [category], cover_image: coverImage, status: 'published',
+          detail_level: detailLevel,
         }),
       });
       // Save pages
@@ -319,6 +322,23 @@ export default function CreateStoryPage() {
               className="w-full mb-2"
             />
             <p className="text-gray-400 text-sm mb-6">{pageCount} pages</p>
+
+            <label className="text-white text-sm font-medium mb-2 block">Detail Level</label>
+            <input
+              type="range"
+              min={1}
+              max={5}
+              value={detailLevel}
+              onChange={e => setDetailLevel(Number(e.target.value))}
+              className="w-full mb-2"
+            />
+            <p className="text-gray-400 text-sm mb-6">
+              {detailLevel === 1 && '🍼 Toddler — 1 simple sentence per page'}
+              {detailLevel === 2 && '🧒 Early Reader — 2 short sentences per page'}
+              {detailLevel === 3 && '📖 Story Time — 3-4 sentences per page'}
+              {detailLevel === 4 && '📚 Chapter Feel — 4-5 rich sentences per page'}
+              {detailLevel === 5 && '🎓 Advanced — 5-6 detailed sentences per page'}
+            </p>
 
             <button
               onClick={generateOutline}
@@ -442,20 +462,29 @@ export default function CreateStoryPage() {
               {!generatingImages && imageProgress > 0 && ' + cover image'}
             </p>
 
-            {/* Show generated images as they come in */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-8">
-              {pages.map((page, i) => (
-                <div key={i} className="aspect-square rounded-xl overflow-hidden bg-white/5">
-                  {page.image_path ? (
-                    <img src={page.image_path} alt={`Page ${i+1}`} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/20">
-                      {i < imageProgress ? '⏳' : `P${i+1}`}
-                    </div>
-                  )}
-                </div>
-              ))}
+            {/* Show generated images as horizontal carousel */}
+            <div className="mt-6 -mx-2">
+              <div className="flex gap-3 overflow-x-auto pb-3 px-2 snap-x snap-mandatory scrollbar-thin">
+                {pages.map((page, i) => (
+                  <div key={i} className="flex-none w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-white/5 snap-start">
+                    {page.image_path ? (
+                      <img src={page.image_path} alt={`Page ${i+1}`} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/20 text-xs">
+                        {i < imageProgress ? '⏳' : `P${i+1}`}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* Mini-game while waiting */}
+            {generatingImages && (
+              <div className="mt-4 border-t border-white/10 pt-4">
+                <StarCatcher />
+              </div>
+            )}
           </div>
         </div>
       )}
