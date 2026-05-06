@@ -9,7 +9,7 @@ const STORY_CTAS = [
   '🌟 Create a Story!',
 ];
 
-const HERO_MASCOTS = ['🦖', '🦄', '🐉', '🧙‍♂️', '🧜‍♀️', '🦊', '🐻', '🚀', '🏴‍☠️', '🧚'];
+const HERO_MASCOTS = ['🦖', '🦄', '🐉', '🧙‍♂️', '🧜‍♀️', '🦊', '🐻', '🚀', '🧚', '🌈'];
 const HERO_MESSAGES = [
   'Every great story starts with YOU!',
   'What adventure will you create today?',
