@@ -16,10 +16,7 @@ export async function POST(request: NextRequest) {
         const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
         const rateCheck = checkRateLimit(ip);
         if (!rateCheck.allowed) {
-          return NextResponse.json(
-            { error: `Whoa, slow down! 🐢 You can create more stories in about ${rateCheck.resetIn} minutes.` },
-            { status: 429 }
-          );
+          return NextResponse.json({ error: rateCheck.message }, { status: 429 });
         }
 
         // Safety check 1: moderation API (catches overtly harmful content)
