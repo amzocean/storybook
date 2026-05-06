@@ -285,17 +285,52 @@ For now, the local SQLite setup works perfectly for personal/family use on a sin
 
 ---
 
+## TODO — Production Deployment
+
+### ✅ Step 1: Add OpenAI API Key to Vercel
+1. Go to [Vercel Dashboard](https://vercel.com) → your `storybook` project
+2. **Settings → Environment Variables**
+3. Add: `OPENAI_API_KEY` = your key from `.env.local`
+4. Set it for **Production**, **Preview**, and **Development**
+5. Redeploy (Deployments tab → click "..." on latest → Redeploy)
+
+### 🔲 Step 2: Create Supabase Project
+1. Go to [supabase.com](https://supabase.com) → create a free project
+2. Note down:
+   - **Project URL**: `https://xxxxx.supabase.co`
+   - **Anon Key**: found in Settings → API → `anon` / `public` key
+   - **Service Role Key**: found in Settings → API (for server-side operations)
+3. Add to Vercel env vars:
+   - `NEXT_PUBLIC_SUPABASE_URL` = project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = anon key
+   - `SUPABASE_SERVICE_ROLE_KEY` = service role key
+
+### 🔲 Step 3: Migrate Database (SQLite → Supabase Postgres)
+- Replace `better-sqlite3` with `@supabase/supabase-js`
+- Rewrite `lib/db.ts` to use Supabase client
+- Create tables in Supabase SQL Editor (same schema as SQLite)
+- Tables: `stories`, `pages`, `categories`
+
+### 🔲 Step 4: Migrate Image Storage (Local → Supabase Storage)
+- Create a `story-images` bucket in Supabase Storage (public access)
+- Rewrite `lib/storage.ts` to upload to Supabase instead of local filesystem
+- Update image URLs from `/story-images/...` to Supabase CDN URLs
+
+### 🔲 Step 5: Verify & Custom Domain
+- Test full flow: create story → read story → admin manage
+- Add GoDaddy custom domain in Vercel dashboard
+- Set DNS records (CNAME/A) in GoDaddy as Vercel instructs
+
+---
+
 ## Known Limitations & Future Ideas
 
 ### Current Limitations
-- **SQLite is local-only** — won't persist on serverless deployments
-- **Images stored on disk** — need blob storage for cloud deployment
 - **No real auth** — just a client-side PIN
 - **No image optimization** — using `unoptimized: true` for simplicity
 - **Single language** — English only
 
 ### Potential Enhancements
-- Migrate to Turso/Postgres for cloud persistence
 - Add text-to-speech (read-aloud mode)
 - Multiple user profiles (siblings)
 - Reading progress tracking / bookmarks
