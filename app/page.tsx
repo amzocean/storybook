@@ -92,9 +92,9 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 sm:gap-3">
-            <span className="text-3xl sm:text-4xl animate-wiggle">🚀</span>
+            <span className="text-3xl sm:text-4xl animate-wiggle">✨</span>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white drop-shadow-lg">
-              Burhanuddin&apos;s Story World
+              Story Sparks
             </h1>
           </Link>
           <div className="flex items-center gap-2">
@@ -289,7 +289,7 @@ export default function HomePage() {
       {/* Fun footer */}
       <footer className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 py-4 text-center">
         <p className="text-white font-bold text-sm sm:text-base">
-          Made with 💖 for Burhanuddin
+          Made with 💖 for Burhanuddin — Sparking stories for kids everywhere ✨
         </p>
       </footer>
     </div>

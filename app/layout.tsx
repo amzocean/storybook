@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Burhanuddin's Story World",
-  description: "Magical stories and adventures for Burhanuddin",
+  title: "Story Sparks ✨",
+  description: "Every kid has a spark — we turn it into a story!",
   viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
   icons: {
     icon: "/favicon.svg",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Burhanuddin's Story World",
+    title: "Story Sparks ✨",
   },
 };
 

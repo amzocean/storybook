@@ -18,7 +18,7 @@ export function checkRateLimit(ip: string): { allowed: boolean; message: string 
   globalRequests.push(...recentGlobal);
 
   if (recentGlobal.length >= MAX_DAILY_GLOBAL) {
-    return { allowed: false, message: "Story World is resting for today! 🌙 Come back tomorrow with more ideas!" };
+    return { allowed: false, message: "Story Sparks is resting for today! 🌙 Come back tomorrow with more ideas!" };
   }
 
   // Per-IP hourly limit

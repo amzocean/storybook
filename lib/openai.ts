@@ -99,7 +99,7 @@ export async function generateStoryOutline(premise: string, category: string, pa
         
         IMPORTANT RULES:
         1. If the title or premise contains a person's name, that MUST be the main character's name. 
-           For example, if the title is "Burhanuddin's Dino Adventure", the main character is named Burhanuddin. 
+           For example, if the title is "Mia's Dino Adventure", the main character is named Mia. 
            NEVER substitute a different name like Tommy, Sam, etc.
         2. Use the character's actual name consistently on every page.`
       },

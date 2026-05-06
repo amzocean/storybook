@@ -1,4 +1,4 @@
-# Burhanuddin's Story World — Developer Documentation
+# Story Sparks — Developer Documentation
 
 ## Overview
 
