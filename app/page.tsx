@@ -100,10 +100,10 @@ export default function HomePage() {
             </Link>
             <Link
               href="/admin/create"
-              className="px-3 sm:px-5 py-2 sm:py-2.5 bg-yellow-400 hover:bg-yellow-300 text-gray-900 rounded-full text-sm sm:text-base font-bold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+              className="px-4 sm:px-6 py-2.5 sm:py-3 bg-yellow-400 hover:bg-yellow-300 text-gray-900 rounded-full text-sm sm:text-base font-extrabold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 animate-pulse hover:animate-none"
               title="Create Story"
             >
-              ✨ <span className="hidden sm:inline">New Story</span>
+              ✏️ <span className="hidden sm:inline">Write a Story!</span>
             </Link>
           </div>
         </div>
@@ -216,7 +216,7 @@ export default function HomePage() {
               href="/admin/create"
               className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-bold rounded-full text-lg shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all"
             >
-              ✨ Create a Story!
+              ✏️ I Want to Write a Story!
             </Link>
           </div>
         ) : filteredStories.length === 0 ? (

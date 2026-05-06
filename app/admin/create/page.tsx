@@ -20,12 +20,9 @@ interface Category {
 }
 
 const STEPS = ['Premise', 'Outline', 'Story & Art', 'Publish'];
-const ADMIN_PIN = '1234'; // Change this!
 
 export default function CreateStoryPage() {
   const router = useRouter();
-  const [authenticated, setAuthenticated] = useState(false);
-  const [pinInput, setPinInput] = useState('');
   const [step, setStep] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
@@ -70,43 +67,6 @@ export default function CreateStoryPage() {
   useEffect(() => {
     fetch('/api/categories').then(r => r.json()).then(setCategories);
   }, []);
-
-  // PIN Check
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 max-w-sm w-full text-center">
-          <div className="text-5xl mb-4">🔐</div>
-          <h2 className="text-white text-xl font-bold mb-2">Enter PIN</h2>
-          <p className="text-gray-400 text-sm mb-6">Adults only! Enter the PIN to create stories.</p>
-          <input
-            type="password"
-            value={pinInput}
-            onChange={e => setPinInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                if (pinInput === ADMIN_PIN) setAuthenticated(true);
-                else { setPinInput(''); setError('Wrong PIN!'); }
-              }
-            }}
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white text-center text-2xl tracking-widest mb-3"
-            placeholder="••••"
-            maxLength={6}
-          />
-          {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
-          <button
-            onClick={() => {
-              if (pinInput === ADMIN_PIN) setAuthenticated(true);
-              else { setPinInput(''); setError('Wrong PIN!'); }
-            }}
-            className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl"
-          >
-            Enter Workshop
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   // Generate outline from AI
   const generateOutline = async () => {
