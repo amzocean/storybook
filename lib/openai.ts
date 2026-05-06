@@ -4,6 +4,52 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
 });
 
+// Content safety: check user input via OpenAI moderation API
+export async function moderateContent(text: string): Promise<{ safe: boolean; reason?: string }> {
+  try {
+    const res = await openai.moderations.create({ input: text });
+    const result = res.results[0];
+    if (result.flagged) {
+      const flagged = Object.entries(result.categories)
+        .filter(([, v]) => v)
+        .map(([k]) => k);
+      return { safe: false, reason: `Content flagged: ${flagged.join(', ')}` };
+    }
+    return { safe: true };
+  } catch {
+    return { safe: true }; // fail open if moderation API errors
+  }
+}
+
+// Content safety: verify generated story is kid-appropriate
+export async function verifyKidFriendly(storyText: string): Promise<{ safe: boolean; reason?: string }> {
+  // First pass: moderation API
+  const mod = await moderateContent(storyText);
+  if (!mod.safe) return mod;
+
+  // Second pass: GPT classifier for subtle issues moderation API misses
+  try {
+    const res = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: `You are a children's content safety reviewer. Evaluate if the text is appropriate for a children's storybook (ages 2-10). 
+          Flag if it contains: violence, scary themes, adult topics, inappropriate language, discrimination, or anything unsuitable for young children.
+          Reply with ONLY a JSON object: {"safe": true} or {"safe": false, "reason": "brief explanation"}`
+        },
+        { role: 'user', content: storyText }
+      ],
+      temperature: 0,
+    });
+    const content = res.choices[0].message.content || '{"safe": true}';
+    const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch {
+    return { safe: true };
+  }
+}
+
 export async function generateStoryOutline(premise: string, category: string, pageCount: number = 6, title: string = '', detailLevel: number = 3) {
   const detailMap: Record<number, { sentences: string; vocab: string; ageLabel: string }> = {
     1: { sentences: '1 simple sentence', vocab: 'very simple words a toddler would understand', ageLabel: 'ages 2-3' },

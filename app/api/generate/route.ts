@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateStoryOutline, regeneratePageText, generateImage, generateCoverImage } from '@/lib/openai';
+import { generateStoryOutline, regeneratePageText, generateImage, generateCoverImage, moderateContent, verifyKidFriendly } from '@/lib/openai';
 import { downloadAndSaveImage } from '@/lib/storage';
 
 export async function POST(request: NextRequest) {
@@ -10,10 +10,24 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'outline': {
         const { premise, category, pageCount, title, detailLevel } = body;
+
+        // Safety check 1: moderate user input
+        const inputCheck = await moderateContent(`${title} ${premise}`);
+        if (!inputCheck.safe) {
+          return NextResponse.json({ error: `🚫 ${inputCheck.reason}. Please keep it kid-friendly!` }, { status: 400 });
+        }
+
         const result = await generateStoryOutline(premise, category, pageCount || 6, title || '', detailLevel || 3);
-        // New format returns { characterSheet, pages } — extract both
         const outline = result.pages || result;
         const characterSheet = result.characterSheet || null;
+
+        // Safety check 2: verify generated story is kid-appropriate
+        const storyText = (outline as any[]).map((p: any) => p.text).join('\n');
+        const outputCheck = await verifyKidFriendly(storyText);
+        if (!outputCheck.safe) {
+          return NextResponse.json({ error: `🚫 Generated story wasn't kid-friendly (${outputCheck.reason}). Try a different premise!` }, { status: 400 });
+        }
+
         return NextResponse.json({ outline, characterSheet });
       }
 
