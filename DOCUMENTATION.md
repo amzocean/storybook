@@ -2,11 +2,11 @@
 
 ## Overview
 
-A kid-friendly, Netflix-style storybook website built for a 7-year-old. The app lets a child browse and read illustrated stories, while a parent can create new stories using AI (OpenAI GPT-4o for text + DALL·E 3 for illustrations) through a wizard-style admin interface.
+A kid-friendly, Netflix-style storybook website that lets children browse, read, and co-author illustrated stories. AI-powered story generation (OpenAI GPT-4o for text + DALL·E 3 for illustrations) with a 3-layer content safety system, moderation queue, and co-author mode so kids can write and edit their own stories.
 
 **GitHub Repo**: https://github.com/amzocean/storybook  
-**Local Path**: `C:\Users\huseinm\storynook`  
-**Status**: Working locally, ready for Vercel deployment
+**Live Site**: Deployed on Vercel (auto-deploys from `main`)  
+**Domain**: `storysparks.fun` (pending DNS setup)
 
 ---
 
@@ -17,11 +17,11 @@ A kid-friendly, Netflix-style storybook website built for a 7-year-old. The app 
 | Framework      | Next.js 16.2.4 (App Router, Turbopack)           |
 | Language       | TypeScript 5.x                                   |
 | UI             | React 19.2.4, Tailwind CSS 4.x                   |
-| Database       | SQLite via `better-sqlite3` (file: `data/storynook.db`) |
+| Database       | Supabase (Postgres) via `@supabase/supabase-js`  |
 | AI             | OpenAI API (`openai` npm) — GPT-4o + DALL·E 3    |
-| Image Storage  | Local filesystem (`public/story-images/{storyId}/`) |
+| Image Storage  | Supabase Storage (public bucket `story-images`)   |
 | Font           | Baloo 2 (Google Fonts) — round, kid-friendly      |
-| Auth           | Simple PIN code (`1234`) on admin pages            |
+| Auth           | Simple PIN code (`1234`) on admin dashboard only   |
 
 ---
 
@@ -33,11 +33,13 @@ storynook/
 │   ├── globals.css              # Tailwind + kid theme (animations, Baloo 2 font)
 │   ├── layout.tsx               # Root layout, metadata, font imports
 │   ├── page.tsx                 # Homepage — kid-facing story library
+│   ├── components/
+│   │   └── StarCatcher.tsx      # Canvas minigame (shown during image generation)
 │   ├── read/
 │   │   └── [id]/page.tsx        # Full-screen story reader
 │   ├── admin/
-│   │   ├── page.tsx             # Admin dashboard (list/manage stories)
-│   │   ├── create/page.tsx      # 4-step wizard: Premise → Outline → Art → Publish
+│   │   ├── page.tsx             # Admin dashboard (PIN-protected, moderation queue)
+│   │   ├── create/page.tsx      # 4-step wizard with co-author mode (no PIN)
 │   │   └── manage/[id]/page.tsx # Story editor (text, images, metadata)
 │   └── api/
 │       ├── stories/
@@ -49,16 +51,15 @@ storynook/
 │       ├── categories/route.ts  # GET all categories
 │       └── generate/route.ts    # POST — AI generation (outline, image, cover, re-edit)
 ├── lib/
-│   ├── db.ts                    # SQLite init, schema, Proxy lazy-init pattern
-│   ├── openai.ts                # GPT-4o + DALL·E 3 wrapper functions
-│   └── storage.ts               # Download DALL·E images to disk, delete helpers
+│   ├── supabase.ts              # Supabase client (service role) + storage URL helper
+│   ├── openai.ts                # GPT-4o + DALL·E 3 + content safety functions
+│   ├── storage.ts               # Download DALL·E images → upload to Supabase Storage
+│   └── rate-limit.ts            # In-memory per-IP + global daily rate limiter
 ├── public/
-│   ├── favicon.svg              # Custom book icon (blue-purple gradient)
-│   └── story-images/            # Generated illustrations (gitignored)
-├── data/
-│   └── storynook.db             # SQLite database (gitignored)
-├── .env.local                   # OPENAI_API_KEY (gitignored)
-├── next.config.ts               # serverExternalPackages, unoptimized images
+│   └── favicon.svg              # Custom book icon (blue-purple gradient)
+├── supabase-setup.sql           # Full DB schema + seed data (run in Supabase SQL Editor)
+├── .env.local                   # API keys (gitignored)
+├── next.config.ts               # Image config
 └── package.json
 ```
 
@@ -66,40 +67,46 @@ storynook/
 
 ## Database Schema
 
-SQLite with WAL mode + `busy_timeout = 5000`. File lives at `data/storynook.db`.
+Supabase Postgres. Schema defined in `supabase-setup.sql`.
 
 ### `stories`
-| Column       | Type | Notes                              |
-|-------------|------|------------------------------------|
-| id          | TEXT | PK, UUID                           |
-| title       | TEXT | NOT NULL                           |
-| description | TEXT |                                    |
-| category    | TEXT | FK to categories.id, default 'adventure' |
-| tags        | TEXT | JSON array string                  |
-| cover_image | TEXT | Relative path to cover PNG         |
-| age_range   | TEXT | Default '5-8'                      |
-| status      | TEXT | 'draft' or 'published'             |
-| created_at  | TEXT | ISO datetime                       |
-| updated_at  | TEXT | ISO datetime                       |
+| Column        | Type        | Notes                                     |
+|--------------|-------------|-------------------------------------------|
+| id           | TEXT        | PK, UUID                                  |
+| title        | TEXT        | NOT NULL                                  |
+| description  | TEXT        |                                           |
+| category     | TEXT        | FK to categories.id, default `'adventure'`|
+| tags         | JSONB       | Array, default `[]`                       |
+| cover_image  | TEXT        | Supabase Storage public URL               |
+| age_range    | TEXT        | Default `'5-7'`, computed from detail_level|
+| detail_level | INTEGER     | 1–5, default `3`                          |
+| author_name  | TEXT        | Kid's display name (optional)             |
+| author_credit| TEXT        | `'imagined'`, `'coauthored'`, or `'authored'` |
+| status       | TEXT        | `'draft'`, `'pending_review'`, `'published'`, `'rejected'` |
+| created_at   | TIMESTAMPTZ | Default `now()`                           |
+| updated_at   | TIMESTAMPTZ | Default `now()`                           |
 
 ### `pages`
-| Column       | Type    | Notes                           |
-|-------------|---------|----------------------------------|
-| id          | TEXT    | PK, UUID                         |
-| story_id   | TEXT    | FK to stories.id (CASCADE DELETE) |
-| page_number | INTEGER |                                  |
-| text        | TEXT    | Story text for this page         |
-| image_path  | TEXT    | Relative path to illustration    |
-| image_prompt| TEXT    | DALL·E prompt used               |
-| created_at  | TEXT    | ISO datetime                     |
+| Column       | Type        | Notes                            |
+|-------------|-------------|----------------------------------|
+| id          | TEXT        | PK, UUID                         |
+| story_id    | TEXT        | FK to stories.id (CASCADE DELETE)|
+| page_number | INTEGER     |                                  |
+| text        | TEXT        | Story text for this page         |
+| image_path  | TEXT        | Supabase Storage public URL      |
+| image_prompt| TEXT        | DALL·E prompt used               |
+| created_at  | TIMESTAMPTZ | Default `now()`                  |
 
 ### `categories`
 | Column | Type | Notes                    |
 |--------|------|--------------------------|
-| id     | TEXT | PK (slug: 'dinosaurs')   |
+| id     | TEXT | PK (slug: `'dinosaurs'`) |
 | name   | TEXT | Display name             |
 | emoji  | TEXT | Category emoji           |
 | color  | TEXT | Hex color for UI pills   |
+
+### `stories_with_page_count` (VIEW)
+Joins `stories` with a page count subquery. Used by the `GET /api/stories` route.
 
 **Default categories**: dinosaurs 🦕, space 🚀, pirates 🏴‍☠️, animals 🐾, fairy-tales 🧚, adventure ⚔️, underwater 🐠, robots 🤖
 
@@ -109,15 +116,15 @@ SQLite with WAL mode + `busy_timeout = 5000`. File lives at `data/storynook.db`.
 
 ### Stories CRUD
 
-| Method | Endpoint              | Description                          |
-|--------|-----------------------|--------------------------------------|
-| GET    | `/api/stories`        | List published stories. Add `?all=true` for drafts too |
-| POST   | `/api/stories`        | Create story (id, title, description, category, tags, cover_image, status) |
-| GET    | `/api/stories/[id]`   | Get story with all pages             |
-| PUT    | `/api/stories/[id]`   | Partial update (only send changed fields) |
-| DELETE | `/api/stories/[id]`   | Delete story + its pages (images left on disk) |
-| POST   | `/api/stories/[id]/pages`    | Add pages to a story          |
-| POST   | `/api/stories/[id]/publish`  | Set status to 'published'     |
+| Method | Endpoint                     | Description                                     |
+|--------|------------------------------|-------------------------------------------------|
+| GET    | `/api/stories`               | List published stories. `?all=true` for all statuses |
+| POST   | `/api/stories`               | Create story (id, title, description, category, tags, cover_image, detail_level, author_name, author_credit, status) |
+| GET    | `/api/stories/[id]`          | Get story with all pages                        |
+| PUT    | `/api/stories/[id]`          | Partial update — send only changed fields. Used for approve/reject (status) |
+| DELETE | `/api/stories/[id]`          | Delete story + pages + Supabase Storage images  |
+| POST   | `/api/stories/[id]/pages`    | Add pages to a story                            |
+| POST   | `/api/stories/[id]/publish`  | Set status to `'published'`                     |
 
 ### Categories
 
@@ -127,96 +134,146 @@ SQLite with WAL mode + `busy_timeout = 5000`. File lives at `data/storynook.db`.
 
 ### AI Generation
 
-| Method | Endpoint        | Body `action` | Parameters                                    | Returns |
-|--------|-----------------|---------------|-----------------------------------------------|---------|
-| POST   | `/api/generate` | `outline`     | premise, category, pageCount                  | `{ outline: [...] }` — array of page objects |
-| POST   | `/api/generate` | `regenerate-page` | currentText, instruction, storyContext    | `{ text, imageDescription }` |
-| POST   | `/api/generate` | `generate-image`  | prompt, storyId, pageNumber              | `{ imageUrl }` — saved local path |
-| POST   | `/api/generate` | `generate-cover`  | title, description, category, storyId    | `{ imageUrl }` — saved local path |
+| Method | Endpoint        | Body `action`      | Parameters                                           | Returns |
+|--------|-----------------|--------------------|------------------------------------------------------|---------|
+| POST   | `/api/generate` | `outline`          | premise, category, pageCount, title, detailLevel     | `{ outline: [...], characterSheet }` |
+| POST   | `/api/generate` | `regenerate-page`  | currentText, instruction, storyContext               | `{ text, imageDescription }` |
+| POST   | `/api/generate` | `generate-image`   | prompt, storyId, pageNumber                          | `{ imageUrl }` — Supabase Storage URL |
+| POST   | `/api/generate` | `generate-cover`   | title, description, category, storyId                | `{ imageUrl }` — Supabase Storage URL |
+
+The `outline` action runs the full 3-layer content safety pipeline before generation (see Content Safety below).
 
 ---
 
 ## Key Implementation Details
 
-### SQLite Lazy-Init Proxy (Critical)
+### Content Safety (3-Layer Pipeline)
 
-Next.js opens multiple routes simultaneously during `next build`, which causes `SQLITE_BUSY` errors. The fix in `lib/db.ts` uses a **Proxy-based lazy initialization pattern**:
+All story creation goes through three safety checks in `api/generate/route.ts`:
 
-```typescript
-const db = new Proxy({} as Database.Database, {
-  get(_, prop) {
-    const instance = getDb(); // only opens DB on first actual use
-    const val = (instance as any)[prop];
-    if (typeof val === 'function') return val.bind(instance);
-    return val;
-  }
-});
-```
+1. **OpenAI Moderation API** (`moderateContent` in `lib/openai.ts`) — free, catches overtly harmful content
+2. **Premise Validator** (`validatePremise`) — GPT-4o-mini gatekeeper that rejects non-story inputs (news, homework, code, adult topics)
+3. **Post-Generation Check** (`verifyKidFriendly`) — scans completed story text for anything that slipped through
 
-This ensures only one connection is ever created, and only when a route actually queries the database (not at import time during static analysis).
+All three fail-open on API errors (allows generation to continue rather than blocking kids).
+
+### Rate Limiting
+
+In-memory rate limiter in `lib/rate-limit.ts`:
+- **Per-IP**: 3 stories/hour
+- **Global daily**: 20 stories/day across all users
+- Resets on Vercel cold starts (ephemeral)
+- Returns kid-friendly messages ("Story Sparks is resting for today! 🌙")
+
+### Co-Author Mode
+
+Kids can edit any page text in the outline step. The system tracks which pages were edited:
+
+- `editedByKid: Set<number>` — tracks page indices the kid modified
+- **0% edited** → `author_credit = 'imagined'` (AI wrote everything)
+- **1–49% edited** → `author_credit = 'coauthored'`
+- **50%+ edited** → `author_credit = 'authored'`
+- Edited pages show a ⭐ star badge in the outline
+- Author credit displayed on the final "The End" page in the reader
+
+### Detail Level System
+
+5 reading levels mapped in `lib/openai.ts`:
+
+| Level | Sentences/Page | Vocabulary  | Age Label |
+|-------|---------------|-------------|-----------|
+| 1     | 1–2           | simple      | 2–3       |
+| 2     | 2–3           | easy        | 4–5       |
+| 3     | 3–4           | moderate    | 5–7       |
+| 4     | 4–5           | rich        | 7–9       |
+| 5     | 5–7           | advanced    | 8–10      |
+
+Default is level 3. The slider is on the create page (Step 1).
+
+### Moderation Queue
+
+- Kids publish stories → status set to `'pending_review'`
+- Homepage `GET /api/stories` filters to `status = 'published'` only
+- Admin dashboard shows pending stories with approve/reject buttons
+- Approve: `PUT /api/stories/[id]` with `{ status: 'published' }`
+- Reject: `PUT /api/stories/[id]` with `{ status: 'rejected' }`
+
+### Parallel DALL·E Image Generation
+
+Uses a 3-worker pool pattern in the create page:
+- Shared queue of pages needing images
+- Workers pull from queue via `shift()` (atomic in single-threaded JS)
+- StarCatcher minigame plays while images generate
+- Progress bar shows completion percentage
 
 ### OpenAI Integration
 
 - **Text generation**: GPT-4o with temperature 0.8 (creative but coherent)
 - **Image generation**: DALL·E 3, 1024x1024, standard quality, vivid style
-- **Prompt prefix**: All DALL·E prompts are prefixed with "Children's storybook illustration, colorful, friendly, cartoon style, suitable for ages 5-8:"
-- **Image response safety**: `response.data?.[0]?.url` — the `data` field can be undefined
-- **Cost**: ~$0.04-0.08 per DALL·E image, ~$0.50 per complete 6-page story
+- **Character consistency**: `generateStoryOutline` returns a `characterSheet` (name, appearance, style) that's used in all DALL·E prompts for that story
+- **Prompt prefix**: All DALL·E prompts include character appearance details for consistency
+- **Cost**: ~$0.04–0.08 per DALL·E image, ~$0.50 per complete 6-page story
 
 ### Image Storage
 
-DALL·E returns temporary URLs. Images are downloaded via `lib/storage.ts` to:
+DALL·E returns temporary URLs (~1 hour). Images are immediately downloaded and uploaded to Supabase Storage via `lib/storage.ts`:
 ```
-public/story-images/{storyId}/cover.png
-public/story-images/{storyId}/page-1.png
-public/story-images/{storyId}/page-2.png
-...
+Bucket: story-images (public)
+Path:   {storyId}/cover.png
+        {storyId}/page-1.png
+        {storyId}/page-2.png
+        ...
+URL:    {SUPABASE_URL}/storage/v1/object/public/story-images/{storyId}/{filename}
 ```
 
-These are served statically by Next.js from `/story-images/...`.
+`downloadAndSaveImage()` downloads from DALL·E URL → uploads to Supabase with `upsert: true`.
+`deleteStoryImages()` lists and removes all files in a story's folder on delete.
 
 ### Admin PIN Auth
 
-PIN `1234` is checked client-side in three files:
-- `app/admin/create/page.tsx`
-- `app/admin/page.tsx`
-- `app/admin/manage/[id]/page.tsx`
+PIN `1234` is checked client-side in two files:
+- `app/admin/page.tsx` — admin dashboard (moderation queue, story management)
+- `app/admin/manage/[id]/page.tsx` — story editor
 
-This is intentionally simple — not a security measure, just a kid-proof gate.
+**Note**: The create page (`/admin/create`) has NO PIN — kids can access it directly to create stories.
 
 ---
 
 ## User-Facing Pages
 
 ### Homepage (`/`)
-- Bright sky-blue gradient with floating emoji decorations (stars, rainbow, dino, rocket)
-- Rainbow gradient header with 🚀 logo
-- Featured story hero card
-- Category filter pills (scrollable)
+- Bright sky-blue gradient with floating emoji decorations (stars, rainbow, dino, rocket, clouds)
+- Rainbow gradient header with ✨ logo and "Story Sparks" branding
+- Randomized CTA button ("💡 I Have a Story Idea!", "✨ Imagine a Story!", "🌟 Create a Story!")
+- Category filter pills (scrollable) + reader level filter
 - Story grid with cover images, hover animations (tilt + scale)
 - Responsive: 2 cols on mobile, up to 5 on desktop
+- Only shows `status = 'published'` stories
+- Footer: "Made with 💖 for Burhanuddin — Sparking stories for kids everywhere ✨"
 
 ### Story Reader (`/read/[id]`)
 - Warm cream/amber background — designed for comfortable reading
 - Full-screen image with white-bordered frame
 - Story text in a soft white card below the image
 - Navigation: keyboard (← → Space Esc), touch swipe (50px threshold), emoji arrow buttons
-- Green progress bar, page dots, "🎉 The End!" on last page
+- Green progress bar, page dots, "🎉 The End!" celebration on last page
+- Author credit displayed on final page (with co-author badge if applicable)
 - Mobile: visible Back/Next buttons below content
 
 ### Admin Dashboard (`/admin`)
-- Dark theme (parent-facing)
-- Lists all stories (drafts + published) with stats
-- Actions: publish/unpublish, delete, edit
-- PIN protected
+- Dark theme (parent-facing), PIN protected
+- 4-column stats: total / pending review / published / drafts
+- Moderation queue: approve or reject pending stories
+- Story management: publish/unpublish, delete, edit
+- Links to create wizard and individual story editors
 
 ### Story Creator (`/admin/create`)
+- **No PIN** — kids can access directly
 - 4-step wizard: Premise → Outline → Story & Art → Publish
-- Step 1: Enter title, premise, category, page count
-- Step 2: AI generates outline, user can edit/regenerate individual pages
-- Step 3: AI generates DALL·E illustrations for each page (sequential)
-- Step 4: Review and publish
-- PIN protected
+- **Step 1**: Title, premise, category, page count, detail level slider (1–5), author name
+- **Step 2**: AI generates outline. Co-author mode: editable textareas, "Make It Shine ✨" (AI polish), "Surprise Me 🎲" (AI rewrite), ⭐ badges on edited pages
+- **Step 3**: Parallel DALL·E image generation (3 workers) with StarCatcher minigame
+- **Step 4**: Review, add cover image, publish (goes to `pending_review`)
 
 ### Story Editor (`/admin/manage/[id]`)
 - Edit metadata (title, description, category)
@@ -233,21 +290,26 @@ This is intentionally simple — not a security measure, just a kid-proof gate.
 
 Create `.env.local` in project root:
 ```
+# OpenAI (required for story generation)
 OPENAI_API_KEY=sk-proj-...your-key-here...
+
+# Supabase (required for database + image storage)
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_...
 ```
 
-Get your key from https://platform.openai.com/api-keys
+- OpenAI key: https://platform.openai.com/api-keys
+- Supabase keys: Dashboard → Settings → API
 
 ### next.config.ts
 
 ```typescript
 const nextConfig: NextConfig = {
-  images: { unoptimized: true },           // static image serving
-  serverExternalPackages: ['better-sqlite3'], // native module exclusion
+  images: { unoptimized: true },  // Supabase Storage URLs served directly
+  serverExternalPackages: [],
 };
 ```
-
-`better-sqlite3` must be in `serverExternalPackages` to prevent Next.js from bundling the native C++ module.
 
 ---
 
@@ -256,7 +318,7 @@ const nextConfig: NextConfig = {
 ```bash
 cd C:\Users\huseinm\storynook
 npm install
-# Create .env.local with OPENAI_API_KEY
+# Create .env.local with all keys (see above)
 npm run dev
 # Open http://localhost:3000
 ```
@@ -265,93 +327,61 @@ npm run dev
 
 ## Deployment (Vercel)
 
+The app is deployed on Vercel with auto-deploy from `main`:
+
 1. Push to GitHub: `git push origin main`
-2. Go to vercel.com → import `amzocean/storybook`
-3. Add env var: `OPENAI_API_KEY`
-4. Deploy
+2. Vercel auto-deploys within ~60 seconds
+3. Environment variables configured in Vercel dashboard:
+   - `OPENAI_API_KEY`
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
 
-**Important**: SQLite won't persist on Vercel's serverless functions (ephemeral filesystem). For production persistence, you'd need to migrate to:
-- **Vercel Postgres** or **Turso** (SQLite-compatible, edge-ready)
-- **Supabase** (Postgres)
-- Or use Vercel's `@vercel/blob` for image storage
+### Custom Domain Setup
 
-For now, the local SQLite setup works perfectly for personal/family use on a single machine.
-
-### Custom Domain (GoDaddy)
-
-1. In Vercel dashboard → Settings → Domains → add your domain
-2. In GoDaddy DNS, set the records Vercel provides (usually CNAME or A records)
+1. In Vercel dashboard → Settings → Domains → add `storysparks.fun`
+2. In domain registrar DNS, set the records Vercel provides (CNAME or A records)
 3. Vercel auto-provisions SSL
-
----
-
-## TODO — Production Deployment
-
-### ✅ Step 1: Add OpenAI API Key to Vercel
-1. Go to [Vercel Dashboard](https://vercel.com) → your `storybook` project
-2. **Settings → Environment Variables**
-3. Add: `OPENAI_API_KEY` = your key from `.env.local`
-4. Set it for **Production**, **Preview**, and **Development**
-5. Redeploy (Deployments tab → click "..." on latest → Redeploy)
-
-### 🔲 Step 2: Create Supabase Project
-1. Go to [supabase.com](https://supabase.com) → create a free project
-2. Note down:
-   - **Project URL**: `https://xxxxx.supabase.co`
-   - **Anon Key**: found in Settings → API → `anon` / `public` key
-   - **Service Role Key**: found in Settings → API (for server-side operations)
-3. Add to Vercel env vars:
-   - `NEXT_PUBLIC_SUPABASE_URL` = project URL
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = anon key
-   - `SUPABASE_SERVICE_ROLE_KEY` = service role key
-
-### 🔲 Step 3: Migrate Database (SQLite → Supabase Postgres)
-- Replace `better-sqlite3` with `@supabase/supabase-js`
-- Rewrite `lib/db.ts` to use Supabase client
-- Create tables in Supabase SQL Editor (same schema as SQLite)
-- Tables: `stories`, `pages`, `categories`
-
-### 🔲 Step 4: Migrate Image Storage (Local → Supabase Storage)
-- Create a `story-images` bucket in Supabase Storage (public access)
-- Rewrite `lib/storage.ts` to upload to Supabase instead of local filesystem
-- Update image URLs from `/story-images/...` to Supabase CDN URLs
-
-### 🔲 Step 5: Verify & Custom Domain
-- Test full flow: create story → read story → admin manage
-- Add GoDaddy custom domain in Vercel dashboard
-- Set DNS records (CNAME/A) in GoDaddy as Vercel instructs
+4. Optional: add `sparkastory.com` as a redirect domain
 
 ---
 
 ## Known Limitations & Future Ideas
 
 ### Current Limitations
-- **No real auth** — just a client-side PIN
-- **No image optimization** — using `unoptimized: true` for simplicity
+- **No real auth** — client-side PIN on admin only, create page is open
+- **No image optimization** — using `unoptimized: true` for Supabase Storage URLs
 - **Single language** — English only
+- **Rate limits reset on cold start** — in-memory Maps, not persistent
+- **No rejected story notification** — kids don't get feedback on why a story was rejected
 
 ### Potential Enhancements
-- Add text-to-speech (read-aloud mode)
+- Text-to-speech (read-aloud mode)
 - Multiple user profiles (siblings)
 - Reading progress tracking / bookmarks
 - Story rating / favorites
 - Offline support (PWA)
 - Print-to-PDF for physical storybooks
 - Multi-language story generation
-- Parent controls (time limits, content filtering)
+- Abuse reporting system
+- OpenAI spending caps / billing alerts
+- Persistent rate limiting (Redis or Supabase)
 
 ---
 
 ## Troubleshooting
 
-### SQLITE_BUSY during build
-The Proxy lazy-init pattern in `lib/db.ts` fixes this. If it recurs, ensure only `getDb()` is used (never direct `new Database()` calls).
-
 ### DALL·E image URLs expire
-DALL·E URLs are temporary (~1 hour). Images are immediately downloaded to `public/story-images/` via `lib/storage.ts`. If an image shows broken, regenerate it from the admin editor.
+DALL·E URLs are temporary (~1 hour). Images are immediately downloaded and uploaded to Supabase Storage via `lib/storage.ts`. If an image shows broken, regenerate it from the admin editor (`/admin/manage/[id]`).
 
-### Next.js dev logo in bottom-left
+### Next.js dev overlay in bottom-left
 This is the Next.js dev overlay — only shows in `npm run dev`, not in production builds.
 
 ### CSS @import order error
 In `globals.css`, the Google Fonts `@import url(...)` must come BEFORE `@import "tailwindcss"`. CSS spec requires `@import` rules to precede all other rules.
+
+### Supabase Storage 403 errors
+Ensure the `story-images` bucket is set to **public** in Supabase Dashboard → Storage. RLS policies should allow all operations (we use the service_role key server-side).
+
+### Rate limit messages appearing unexpectedly
+Rate limits use in-memory Maps that reset on Vercel cold starts. If the daily cap of 20 stories is hit, all users are blocked until the next cold start or 24-hour window.
