@@ -1,65 +1,238 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+
+interface Story {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  cover_image: string;
+  page_count: number;
+  tags: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  emoji: string;
+  color: string;
+}
+
+export default function HomePage() {
+  const [stories, setStories] = useState<Story[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/stories').then(r => r.json()),
+      fetch('/api/categories').then(r => r.json()),
+    ]).then(([storiesData, categoriesData]) => {
+      setStories(storiesData);
+      setCategories(categoriesData);
+      setLoading(false);
+    });
+  }, []);
+
+  const filteredStories = selectedCategory === 'all'
+    ? stories
+    : stories.filter(s => s.category === selectedCategory);
+
+  const getCategoryInfo = (catId: string) => categories.find(c => c.id === catId);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-sky-300 via-sky-200 to-emerald-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-7xl animate-bounce mb-4">🚀</div>
+          <p className="text-sky-800 text-2xl font-bold">Loading adventures...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-gradient-to-b from-sky-300 via-sky-200 to-emerald-100 relative overflow-hidden">
+      {/* Floating decorations */}
+      <div className="absolute top-20 left-10 text-5xl animate-float opacity-40 pointer-events-none">⭐</div>
+      <div className="absolute top-40 right-16 text-4xl animate-float-slow opacity-30 pointer-events-none">🌈</div>
+      <div className="absolute top-64 left-1/4 text-3xl animate-float opacity-20 pointer-events-none">☁️</div>
+      <div className="absolute top-32 right-1/3 text-6xl animate-float-slow opacity-20 pointer-events-none">☁️</div>
+      <div className="absolute bottom-40 right-10 text-4xl animate-wiggle opacity-30 pointer-events-none">🦕</div>
+      <div className="absolute bottom-20 left-20 text-3xl animate-float opacity-25 pointer-events-none">🚀</div>
+
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3">
+            <span className="text-3xl sm:text-4xl animate-wiggle">🚀</span>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white drop-shadow-lg">
+              Burhanuddin&apos;s Story World
+            </h1>
+          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin"
+              className="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all text-lg"
+              title="Manage Stories"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              ⚙️
+            </Link>
+            <Link
+              href="/admin/create"
+              className="px-3 sm:px-5 py-2 sm:py-2.5 bg-yellow-400 hover:bg-yellow-300 text-gray-900 rounded-full text-sm sm:text-base font-bold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+              title="Create Story"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              ✨ <span className="hidden sm:inline">New Story</span>
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </header>
+
+      {/* Hero Section */}
+      {stories.length > 0 ? (
+        <section className="relative px-4 sm:px-6 pt-8 pb-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-xl overflow-hidden border-4 border-yellow-300">
+              <div className="flex flex-col md:flex-row">
+                {/* Cover image */}
+                <div className="md:w-1/3 aspect-square md:aspect-auto">
+                  {stories[0]?.cover_image ? (
+                    <img
+                      src={stories[0].cover_image}
+                      alt={stories[0].title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full min-h-[200px] bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                      <span className="text-8xl">📖</span>
+                    </div>
+                  )}
+                </div>
+                {/* Info */}
+                <div className="flex-1 p-6 sm:p-8 flex flex-col justify-center">
+                  <div className="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-bold mb-3 w-fit">
+                    ⭐ Featured Story
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">{stories[0]?.title}</h2>
+                  <p className="text-gray-500 text-base sm:text-lg mb-5 line-clamp-2">{stories[0]?.description}</p>
+                  <Link
+                    href={`/read/${stories[0]?.id}`}
+                    className="inline-flex items-center gap-2 px-7 py-3 bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-300 hover:to-emerald-400 text-white font-bold rounded-full transition-all text-lg shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 w-fit"
+                  >
+                    📖 Read Now!
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Category Filter */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+        <h2 className="text-xl sm:text-2xl font-extrabold text-gray-700 mb-3 sm:mb-4">🗂️ Pick a Category!</h2>
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-3 hide-scrollbar">
+          <button
+            onClick={() => setSelectedCategory('all')}
+            className={`px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-bold text-sm sm:text-base whitespace-nowrap transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 ${
+              selectedCategory === 'all'
+                ? 'bg-yellow-400 text-gray-800 ring-4 ring-yellow-200'
+                : 'bg-white text-gray-600 hover:bg-yellow-50'
+            }`}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            🌟 All Stories
+          </button>
+          {categories.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-bold text-sm sm:text-base whitespace-nowrap transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 ${
+                selectedCategory === cat.id
+                  ? 'text-white ring-4 ring-white/50'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+              style={selectedCategory === cat.id ? { backgroundColor: cat.color } : {}}
+            >
+              {cat.emoji} {cat.name}
+            </button>
+          ))}
         </div>
-      </main>
+      </section>
+
+      {/* Story Grid */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
+        {stories.length === 0 ? (
+          <div className="text-center py-16 sm:py-20">
+            <div className="text-7xl sm:text-8xl mb-4 animate-bounce">🦖</div>
+            <h3 className="text-gray-700 text-2xl sm:text-3xl font-extrabold mb-2">No stories yet!</h3>
+            <p className="text-gray-500 text-base sm:text-lg mb-6">Let&apos;s create your first adventure!</p>
+            <Link
+              href="/admin/create"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-bold rounded-full text-lg shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all"
+            >
+              ✨ Create a Story!
+            </Link>
+          </div>
+        ) : filteredStories.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-gray-700 text-xl font-bold mb-2">No stories in this category yet!</h3>
+            <button onClick={() => setSelectedCategory('all')} className="text-blue-500 font-bold hover:underline text-lg">
+              Show all stories →
+            </button>
+          </div>
+        ) : (
+          <>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-gray-700 mb-4 sm:mb-6">
+              {selectedCategory === 'all' ? '📚 All Adventures' : `${getCategoryInfo(selectedCategory)?.emoji} ${getCategoryInfo(selectedCategory)?.name} Stories`}
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+              {filteredStories.map(story => {
+                const cat = getCategoryInfo(story.category);
+                return (
+                  <Link key={story.id} href={`/read/${story.id}`} className="group">
+                    <div className="relative aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden bg-white border-4 border-white shadow-lg group-hover:shadow-2xl transition-all group-hover:scale-105 group-hover:-rotate-1 active:scale-95">
+                      {story.cover_image ? (
+                        <img
+                          src={story.cover_image}
+                          alt={story.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-pink-400">
+                          <span className="text-6xl sm:text-7xl">{cat?.emoji || '📖'}</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                      <div className="absolute bottom-0 p-3 sm:p-4">
+                        <span
+                          className="text-xs px-2 py-0.5 rounded-full text-white font-bold mb-1.5 inline-block"
+                          style={{ backgroundColor: cat?.color || '#888' }}
+                        >
+                          {cat?.emoji} {cat?.name}
+                        </span>
+                        <h3 className="text-white font-extrabold text-sm sm:text-base leading-tight drop-shadow-lg">{story.title}</h3>
+                        <p className="text-white/80 text-xs mt-0.5 font-medium">{story.page_count} pages 📄</p>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* Fun footer */}
+      <footer className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 py-4 text-center">
+        <p className="text-white font-bold text-sm sm:text-base">
+          Made with 💖 for Burhanuddin
+        </p>
+      </footer>
     </div>
   );
 }

@@ -33,6 +33,10 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# data & uploaded images (local only)
+/data/
+/public/story-images/
+
 # vercel
 .vercel
 
