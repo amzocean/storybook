@@ -4,6 +4,34 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
 });
 
+// Content safety: verify premise is actually a children's story idea (not news, homework, etc.)
+export async function validatePremise(premise: string): Promise<{ safe: boolean; reason?: string }> {
+  try {
+    const res = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: `You are a gatekeeper for a children's storybook app. Your ONLY job is to decide if the user's input is a valid children's story idea.
+          
+          ALLOW: story ideas, character descriptions, adventure plots, animal tales, fairy tales, moral lessons, fantasy, friendship stories, bedtime stories, etc.
+          REJECT: news requests, homework help, code generation, adult topics, political topics, war/violence, real-world current events, general knowledge questions, anything that is NOT a children's story premise.
+          
+          Reply with ONLY a JSON object: {"safe": true} or {"safe": false, "reason": "brief kid-friendly explanation"}`
+        },
+        { role: 'user', content: premise }
+      ],
+      temperature: 0,
+      max_tokens: 100,
+    });
+    const content = res.choices[0].message.content || '{"safe": true}';
+    const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch {
+    return { safe: true };
+  }
+}
+
 // Content safety: check user input via OpenAI moderation API
 export async function moderateContent(text: string): Promise<{ safe: boolean; reason?: string }> {
   try {
