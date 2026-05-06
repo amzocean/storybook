@@ -150,13 +150,16 @@ export default function CreateStoryPage() {
     setLoading(false);
   };
 
-  // Generate all images
+  // Generate all images (parallel with concurrency limit)
   const generateAllImages = async () => {
     setGeneratingImages(true);
     setImageProgress(0);
     const updated = [...pages];
+    const concurrency = 3;
+    let completed = 0;
 
-    for (let i = 0; i < updated.length; i++) {
+    // Process pages in parallel batches
+    const generatePage = async (i: number) => {
       try {
         const res = await fetch('/api/generate', {
           method: 'POST',
@@ -176,11 +179,22 @@ export default function CreateStoryPage() {
       } catch (e) {
         console.error(`Failed to generate image for page ${i + 1}`);
       }
-      setImageProgress(i + 1);
+      completed++;
+      setImageProgress(completed);
       setPages([...updated]);
-    }
+    };
 
-    // Generate cover
+    // Run with concurrency pool
+    const queue = [...Array(updated.length).keys()];
+    const workers = Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
+      while (queue.length > 0) {
+        const idx = queue.shift()!;
+        await generatePage(idx);
+      }
+    });
+    await Promise.all(workers);
+
+    // Generate cover (can start after pages)
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
