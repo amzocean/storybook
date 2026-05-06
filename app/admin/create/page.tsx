@@ -272,8 +272,8 @@ export default function CreateStoryPage() {
       {/* STEP 0: Premise */}
       {step === 0 && (
         <div className="max-w-2xl mx-auto px-6">
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
-            <h2 className="text-white text-2xl font-bold mb-2">💡 What's your story about?</h2>
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-8">
+            <h2 className="text-white text-xl sm:text-2xl font-bold mb-2">💡 What's your story about?</h2>
             <p className="text-gray-400 mb-6">Describe your idea in a sentence or two. The AI will build a full story from it!</p>
 
             <label className="text-white text-sm font-medium mb-2 block">Story Title (optional)</label>
@@ -334,8 +334,8 @@ export default function CreateStoryPage() {
       {/* STEP 1: Outline */}
       {step === 1 && (
         <div className="max-w-3xl mx-auto px-6">
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
-            <h2 className="text-white text-2xl font-bold mb-2">📋 Story Outline</h2>
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-8">
+            <h2 className="text-white text-xl sm:text-2xl font-bold mb-2">📋 Story Outline</h2>
             <p className="text-gray-400 mb-6">Review and edit each page. Click a page to modify it.</p>
 
             {characterSheet && (
@@ -394,7 +394,7 @@ export default function CreateStoryPage() {
                     {editingPage !== i && (
                       <button
                         onClick={() => setEditingPage(i)}
-                        className="text-white/40 hover:text-white text-sm"
+                        className="text-white/40 hover:text-white text-sm p-2 -m-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
                       >
                         ✏️
                       </button>
@@ -425,9 +425,9 @@ export default function CreateStoryPage() {
       {/* STEP 2: Generating Images */}
       {step === 2 && (
         <div className="max-w-3xl mx-auto px-6">
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 text-center">
-            <div className="text-6xl mb-4 animate-pulse">🎨</div>
-            <h2 className="text-white text-2xl font-bold mb-2">Creating Illustrations...</h2>
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-8 text-center">
+            <div className="text-5xl sm:text-6xl mb-4 animate-pulse">🎨</div>
+            <h2 className="text-white text-xl sm:text-2xl font-bold mb-2">Creating Illustrations...</h2>
             <p className="text-gray-400 mb-6">
               DALL·E is painting your story! This takes about 30 seconds per page.
             </p>
@@ -443,7 +443,7 @@ export default function CreateStoryPage() {
             </p>
 
             {/* Show generated images as they come in */}
-            <div className="grid grid-cols-3 gap-3 mt-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-8">
               {pages.map((page, i) => (
                 <div key={i} className="aspect-square rounded-xl overflow-hidden bg-white/5">
                   {page.image_path ? (
@@ -463,8 +463,8 @@ export default function CreateStoryPage() {
       {/* STEP 3: Review & Publish */}
       {step === 3 && (
         <div className="max-w-4xl mx-auto px-6">
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
-            <h2 className="text-white text-2xl font-bold mb-2">📖 Review Your Story</h2>
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-8">
+            <h2 className="text-white text-xl sm:text-2xl font-bold mb-2">📖 Review Your Story</h2>
             <p className="text-gray-400 mb-6">Here's how it'll look! Make sure you're happy before publishing.</p>
 
             {/* Title edit */}
@@ -484,9 +484,9 @@ export default function CreateStoryPage() {
             {/* Pages preview */}
             <div className="space-y-6 mb-8">
               {pages.map((page, i) => (
-                <div key={i} className="flex gap-4 items-start bg-white/5 rounded-xl p-4">
+                <div key={i} className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start bg-white/5 rounded-xl p-4">
                   {page.image_path && (
-                    <img src={page.image_path} alt={`Page ${i+1}`} className="w-32 h-32 object-cover rounded-lg flex-shrink-0" />
+                    <img src={page.image_path} alt={`Page ${i+1}`} className="w-full sm:w-32 h-48 sm:h-32 object-cover rounded-lg flex-shrink-0" />
                   )}
                   <div>
                     <span className="text-purple-400 text-xs font-bold">PAGE {i + 1}</span>
