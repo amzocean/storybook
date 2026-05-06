@@ -343,10 +343,17 @@ The app is deployed on Vercel with auto-deploy from `main`:
 
 ### Custom Domain Setup
 
-1. In Vercel dashboard → Settings → Domains → add `storysparks.fun`
-2. In domain registrar DNS, set the records Vercel provides (CNAME or A records)
-3. Vercel auto-provisions SSL
-4. Optional: add `sparkastory.com` as a redirect domain
+Domain: **storysparks.fun** (registered on GoDaddy)
+
+DNS records configured at GoDaddy:
+| Type | Name | Value |
+|------|------|-------|
+| A | `@` | `216.198.79.1` |
+| CNAME | `www` | `a19d443c46f74f61.vercel-dns-017.com.` |
+
+- Vercel auto-provisions SSL
+- `www.storysparks.fun` → 307 redirect to `storysparks.fun`
+- Vercel fallback: `storybook-three-lime.vercel.app`
 
 ---
 
