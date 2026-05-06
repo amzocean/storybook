@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { id, title, description, category, tags, cover_image, detail_level, status } = body;
+  const { id, title, description, category, tags, cover_image, detail_level, author_name, author_credit, status } = body;
 
   const ageRangeMap: Record<number, string> = {
     1: '2-3', 2: '4-5', 3: '5-7', 4: '7-9', 5: '8-10',
@@ -33,6 +33,8 @@ export async function POST(request: NextRequest) {
     cover_image,
     age_range,
     detail_level: detail_level || 3,
+    author_name: author_name || null,
+    author_credit: author_credit || 'imagined',
     status: status || 'draft',
   });
 

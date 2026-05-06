@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS stories (
   cover_image TEXT,
   age_range TEXT DEFAULT '5-7',
   detail_level INTEGER DEFAULT 3,
+  author_name TEXT,
+  author_credit TEXT DEFAULT 'imagined',
   status TEXT DEFAULT 'draft',
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()

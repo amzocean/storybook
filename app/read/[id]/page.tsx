@@ -14,6 +14,8 @@ interface Story {
   id: string;
   title: string;
   pages: Page[];
+  author_name?: string;
+  author_credit?: string;
 }
 
 export default function ReadStory() {
@@ -194,6 +196,12 @@ export default function ReadStory() {
       {isLastPage && (
         <div className="text-center pb-6">
           <p className="text-2xl font-extrabold text-amber-700 animate-bounce">🎉 The End! 🎉</p>
+          {story.author_name && (
+            <p className="text-amber-600 font-semibold mt-2 text-lg">
+              {story.author_credit === 'authored' ? '✨ Story authored by' : story.author_credit === 'coauthored' ? '🤝 Story co-authored by' : '💭 Story imagined by'}{' '}
+              <span className="text-amber-800">{story.author_name}</span>
+            </p>
+          )}
         </div>
       )}
     </div>

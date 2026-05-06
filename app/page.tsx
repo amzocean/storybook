@@ -13,6 +13,8 @@ interface Story {
   tags: string;
   detail_level: number;
   age_range: string;
+  author_name: string | null;
+  author_credit: string | null;
 }
 
 interface Category {
@@ -257,6 +259,11 @@ export default function HomePage() {
                         </span>
                         <h3 className="text-white font-extrabold text-sm sm:text-base leading-tight drop-shadow-lg">{story.title}</h3>
                         <p className="text-white/80 text-xs mt-0.5 font-medium">{story.page_count} pages 📄</p>
+                        {story.author_name && (
+                          <p className="text-white/70 text-xs mt-0.5 italic">
+                            {story.author_credit === 'authored' ? '✨ By' : story.author_credit === 'coauthored' ? '🤝 Co-authored by' : '💭 Imagined by'} {story.author_name}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </Link>
