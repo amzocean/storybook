@@ -263,6 +263,8 @@ PIN `1234` is checked client-side in two files:
 - Green progress bar, page dots, "🎉 The End!" celebration on last page
 - Author credit displayed on final page (with co-author badge if applicable)
 - Mobile: visible Back/Next buttons below content
+- **Share button**: "Share" text button in top bar — uses Web Share API (native share sheet) on mobile, clipboard copy on desktop with "✅ Copied!" feedback
+- Each story has a unique shareable URL (`/read/[id]`)
 
 ### Admin Dashboard (`/admin`)
 - Dark theme (parent-facing), PIN protected
