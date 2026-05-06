@@ -24,7 +24,22 @@ export default function ReadStory() {
   const [story, setStory] = useState<Story | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
   const touchRef = useRef<{ startX: number; startY: number } | null>(null);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = story?.title || 'Story Sparks';
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text: `Read "${title}" on Story Sparks! ✨`, url });
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   useEffect(() => {
     fetch(`/api/stories/${params.id}`)
@@ -113,10 +128,19 @@ export default function ReadStory() {
         >
           🏠 Home
         </button>
-        <h2 className="text-gray-700 font-extrabold text-xs sm:text-sm truncate max-w-[50%] text-center">{story.title}</h2>
-        <span className="px-3 py-1.5 bg-white/80 text-gray-600 rounded-full text-xs sm:text-sm font-bold shadow-md">
-          📄 {currentPage + 1}/{story.pages.length}
-        </span>
+        <h2 className="text-gray-700 font-extrabold text-xs sm:text-sm truncate max-w-[40%] text-center">{story.title}</h2>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleShare}
+            className="px-3 py-1.5 bg-white/80 hover:bg-white text-gray-700 rounded-full text-sm font-bold shadow-md transition-all hover:scale-105 active:scale-95"
+            title="Share this story"
+          >
+            {copied ? '✅ Copied!' : '🔗 Share'}
+          </button>
+          <span className="px-3 py-1.5 bg-white/80 text-gray-600 rounded-full text-xs sm:text-sm font-bold shadow-md">
+            📄 {currentPage + 1}/{story.pages.length}
+          </span>
+        </div>
       </div>
 
       {/* Page Content */}
