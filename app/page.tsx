@@ -107,10 +107,10 @@ export default function HomePage() {
             </Link>
             <Link
               href="/admin/create"
-              className="px-4 sm:px-6 py-2.5 sm:py-3 bg-yellow-400 hover:bg-yellow-300 text-gray-900 rounded-full text-sm sm:text-base font-extrabold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 animate-pulse hover:animate-none"
+              className="px-5 sm:px-6 py-2.5 sm:py-3 bg-yellow-400 hover:bg-yellow-300 text-gray-900 rounded-full text-sm sm:text-base font-extrabold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 animate-pulse hover:animate-none whitespace-nowrap"
               title="Create Story"
             >
-              ✏️ <span className="hidden sm:inline">{storyCta}</span>
+              ✏️ Create!
             </Link>
           </div>
         </div>
