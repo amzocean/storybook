@@ -132,10 +132,15 @@ export default function HomePage() {
                 {/* Info */}
                 <div className="flex-1 p-6 sm:p-8 flex flex-col justify-center">
                   <div className="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-bold mb-3 w-fit">
-                    ⭐ Featured Story
+                    ⭐ Latest Story
                   </div>
                   <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">{stories[0]?.title}</h2>
-                  <p className="text-gray-500 text-base sm:text-lg mb-5 line-clamp-2">{stories[0]?.description}</p>
+                  <p className="text-gray-500 text-base sm:text-lg mb-2 line-clamp-2">{stories[0]?.description}</p>
+                  {stories[0]?.author_name && (
+                    <p className="text-gray-400 text-sm mb-4 italic">
+                      {stories[0].author_credit === 'authored' ? '✨ By' : stories[0].author_credit === 'coauthored' ? '🤝 Co-authored by' : '💭 Imagined by'} {stories[0].author_name}
+                    </p>
+                  )}
                   <Link
                     href={`/read/${stories[0]?.id}`}
                     className="inline-flex items-center gap-2 px-7 py-3 bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-300 hover:to-emerald-400 text-white font-bold rounded-full transition-all text-lg shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 w-fit"
