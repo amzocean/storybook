@@ -168,7 +168,7 @@ export default function CreateStoryPage() {
     setLoading(false);
   };
 
-  // Fix My Story — AI polishes kid's text while keeping their ideas
+  // Polish My Story — AI polishes kid's text while keeping their ideas
   const fixMyStory = async (pageNum: number) => {
     setFixingPage(pageNum);
     try {
@@ -483,7 +483,7 @@ export default function CreateStoryPage() {
                         className="px-2.5 py-1 bg-blue-600/80 hover:bg-blue-500 text-white text-xs rounded-lg disabled:opacity-30 transition-all"
                         title="AI polishes your writing while keeping your ideas"
                       >
-                        {fixingPage === i ? '...' : '🔄 Fix My Story'}
+                        {fixingPage === i ? '...' : '🪄 Make It Shine'}
                       </button>
                       <button
                         onClick={() => surpriseMe(i)}
