@@ -63,11 +63,29 @@ export default function AdminDashboard() {
           body: JSON.stringify({ status: 'draft' }),
         });
       } else {
-        await fetch(`/api/stories/${id}/publish`, { method: 'POST' });
+        // Direct publish from admin (bypasses moderation queue)
+        await fetch(`/api/stories/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'published' }),
+        });
       }
       loadStories();
     } catch {
       setError('Failed to update story');
+    }
+  }
+
+  async function rejectStory(id: string) {
+    try {
+      await fetch(`/api/stories/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'rejected' }),
+      });
+      loadStories();
+    } catch {
+      setError('Failed to reject story');
     }
   }
 
@@ -130,10 +148,14 @@ export default function AdminDashboard() {
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Stats bar */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
             <div className="text-3xl font-bold text-blue-400">{stories.length}</div>
             <div className="text-gray-400 text-sm">Total Stories</div>
+          </div>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
+            <div className="text-3xl font-bold text-orange-400">{stories.filter(s => s.status === 'pending_review').length}</div>
+            <div className="text-gray-400 text-sm">Pending Review</div>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
             <div className="text-3xl font-bold text-emerald-400">{stories.filter(s => s.status === 'published').length}</div>
@@ -192,9 +214,13 @@ export default function AdminDashboard() {
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                         story.status === 'published'
                           ? 'bg-emerald-500/20 text-emerald-300'
+                          : story.status === 'pending_review'
+                          ? 'bg-orange-500/20 text-orange-300'
+                          : story.status === 'rejected'
+                          ? 'bg-red-500/20 text-red-300'
                           : 'bg-amber-500/20 text-amber-300'
                       }`}>
-                        {story.status}
+                        {story.status === 'pending_review' ? '⏳ pending review' : story.status}
                       </span>
                     </div>
                     <p className="text-gray-400 text-sm truncate">{story.description || 'No description'}</p>
@@ -229,8 +255,16 @@ export default function AdminDashboard() {
                           : 'bg-emerald-600/30 hover:bg-emerald-600/50 border-emerald-500/30'
                       }`}
                     >
-                      {story.status === 'published' ? '📥 Unpublish' : '🚀 Publish'}
+                      {story.status === 'published' ? '📥 Unpublish' : '✅ Approve'}
                     </button>
+                    {story.status === 'pending_review' && (
+                      <button
+                        onClick={() => rejectStory(story.id)}
+                        className="px-3 py-2 bg-red-600/30 hover:bg-red-600/50 border border-red-500/30 rounded-lg text-sm transition"
+                      >
+                        ❌ Reject
+                      </button>
+                    )}
                     <button
                       onClick={() => deleteStory(story.id, story.title)}
                       disabled={deleting === story.id}

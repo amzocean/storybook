@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateStoryOutline, regeneratePageText, generateImage, generateCoverImage, moderateContent, verifyKidFriendly, validatePremise } from '@/lib/openai';
 import { downloadAndSaveImage } from '@/lib/storage';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -10,6 +11,16 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'outline': {
         const { premise, category, pageCount, title, detailLevel } = body;
+
+        // Rate limit check (IP-based, 5 stories/hour)
+        const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+        const rateCheck = checkRateLimit(ip);
+        if (!rateCheck.allowed) {
+          return NextResponse.json(
+            { error: `Whoa, slow down! 🐢 You can create more stories in about ${rateCheck.resetIn} minutes.` },
+            { status: 429 }
+          );
+        }
 
         // Safety check 1: moderation API (catches overtly harmful content)
         const inputCheck = await moderateContent(`${title} ${premise}`);
