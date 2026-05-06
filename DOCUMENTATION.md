@@ -246,13 +246,14 @@ PIN `1234` is checked client-side in two files:
 
 ### Homepage (`/`)
 - Bright sky-blue gradient with floating emoji decorations (stars, rainbow, dino, rocket, clouds)
-- Rainbow gradient header with ✨ logo and "Story Sparks" branding
-- Randomized CTA button ("💡 I Have a Story Idea!", "✨ Imagine a Story!", "🌟 Create a Story!")
+- Rainbow gradient header with ✨ logo and "Story Sparks" branding + always-visible "✏️ Create!" button
+- **Hero banner** (always visible): rotating mascot emoji (🦖🦄🐉🧙‍♂️🧜‍♀️🦊🐻🚀🧚🌈), randomized encouraging message, big Create CTA
 - Category filter pills (scrollable) + reader level filter
 - Story grid with cover images, hover animations (tilt + scale)
 - Responsive: 2 cols on mobile, up to 5 on desktop
 - Only shows `status = 'published'` stories
 - Footer: "Made with 💖 for Burhanuddin — Sparking stories for kids everywhere ✨"
+- Footer links: 📬 Contact Us + 🐛 Report an Issue (mailto: storysparks.fun@gmail.com)
 
 ### Story Reader (`/read/[id]`)
 - Warm cream/amber background — designed for comfortable reading
