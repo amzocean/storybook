@@ -9,6 +9,16 @@ const STORY_CTAS = [
   '🌟 Create a Story!',
 ];
 
+const HERO_MASCOTS = ['🦖', '🦄', '🐉', '🧙‍♂️', '🧜‍♀️', '🦊', '🐻', '🚀', '🏴‍☠️', '🧚'];
+const HERO_MESSAGES = [
+  'Every great story starts with YOU!',
+  'What adventure will you create today?',
+  'Your imagination is the only limit!',
+  'Ready to write something amazing?',
+  'The best stories come from kids like you!',
+  'Dream it. Write it. Share it!',
+];
+
 interface Story {
   id: string;
   title: string;
@@ -116,50 +126,26 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      {stories.length > 0 ? (
-        <section className="relative px-4 sm:px-6 pt-8 pb-4">
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden border-4 border-yellow-300">
-              <div className="flex flex-col md:flex-row">
-                {/* Cover image */}
-                <div className="md:w-1/3 aspect-square md:aspect-auto">
-                  {stories[0]?.cover_image ? (
-                    <img
-                      src={stories[0].cover_image}
-                      alt={stories[0].title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full min-h-[200px] bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                      <span className="text-8xl">📖</span>
-                    </div>
-                  )}
-                </div>
-                {/* Info */}
-                <div className="flex-1 p-6 sm:p-8 flex flex-col justify-center">
-                  <div className="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-bold mb-3 w-fit">
-                    ⭐ Latest Story
-                  </div>
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">{stories[0]?.title}</h2>
-                  <p className="text-gray-500 text-base sm:text-lg mb-2 line-clamp-2">{stories[0]?.description}</p>
-                  {stories[0]?.author_name && (
-                    <p className="text-gray-400 text-sm mb-4 italic">
-                      {stories[0].author_credit === 'authored' ? '✨ By' : stories[0].author_credit === 'coauthored' ? '🤝 Co-authored by' : '💭 Imagined by'} {stories[0].author_name}
-                    </p>
-                  )}
-                  <Link
-                    href={`/read/${stories[0]?.id}`}
-                    className="inline-flex items-center gap-2 px-7 py-3 bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-300 hover:to-emerald-400 text-white font-bold rounded-full transition-all text-lg shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 w-fit"
-                  >
-                    📖 Read Now!
-                  </Link>
-                </div>
-              </div>
+      {/* Hero Banner — always visible */}
+      <section className="relative px-4 sm:px-6 pt-6 sm:pt-8 pb-2">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border-4 border-yellow-300 p-6 sm:p-8 text-center">
+            <div className="text-6xl sm:text-7xl mb-3 animate-bounce">
+              {HERO_MASCOTS[Math.floor(Math.random() * HERO_MASCOTS.length)]}
             </div>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-800 mb-1">
+              {HERO_MESSAGES[Math.floor(Math.random() * HERO_MESSAGES.length)]}
+            </h2>
+            <p className="text-gray-500 text-sm sm:text-base mb-4">Spark your imagination and create stories with AI ✨</p>
+            <Link
+              href="/admin/create"
+              className="inline-flex items-center gap-2 px-8 sm:px-10 py-3.5 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-extrabold rounded-full text-base sm:text-lg shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all"
+            >
+              {storyCta}
+            </Link>
           </div>
-        </section>
-      ) : null}
+        </div>
+      </section>
 
       {/* Category Filter */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-2">
@@ -214,25 +200,20 @@ export default function HomePage() {
 
       {/* Story Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
-        {stories.length === 0 ? (
-          <div className="text-center py-16 sm:py-20">
-            <div className="text-7xl sm:text-8xl mb-4 animate-bounce">🦖</div>
-            <h3 className="text-gray-700 text-2xl sm:text-3xl font-extrabold mb-2">No stories yet!</h3>
-            <p className="text-gray-500 text-base sm:text-lg mb-6">Let&apos;s create your first adventure!</p>
-            <Link
-              href="/admin/create"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-bold rounded-full text-lg shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all"
-            >
-              {storyCta}
-            </Link>
-          </div>
-        ) : filteredStories.length === 0 ? (
-          <div className="text-center py-16">
+        {filteredStories.length === 0 ? (
+          <div className="text-center py-12 sm:py-16">
             <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-gray-700 text-xl font-bold mb-2">No stories in this category yet!</h3>
-            <button onClick={() => setSelectedCategory('all')} className="text-blue-500 font-bold hover:underline text-lg">
-              Show all stories →
-            </button>
+            <h3 className="text-gray-700 text-xl font-bold mb-2">
+              {stories.length === 0 ? 'No stories yet!' : 'No stories in this category yet!'}
+            </h3>
+            <p className="text-gray-500 text-base mb-4">
+              {stories.length === 0 ? 'Use the button above to create your first adventure!' : ''}
+            </p>
+            {stories.length > 0 && (
+              <button onClick={() => setSelectedCategory('all')} className="text-blue-500 font-bold hover:underline text-lg">
+                Show all stories →
+              </button>
+            )}
           </div>
         ) : (
           <>
