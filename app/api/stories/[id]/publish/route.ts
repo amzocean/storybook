@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  db.prepare("UPDATE stories SET status = 'published', updated_at = datetime('now') WHERE id = ?").run(id);
+
+  const { error } = await supabase
+    .from('stories')
+    .update({ status: 'published', updated_at: new Date().toISOString() })
+    .eq('id', id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

@@ -1,46 +1,37 @@
-import fs from 'fs';
-import path from 'path';
-import https from 'https';
-import http from 'http';
+import { supabase, getStoragePublicUrl } from './supabase';
 
-const PUBLIC_IMAGES = path.join(process.cwd(), 'public', 'story-images');
-
-if (!fs.existsSync(PUBLIC_IMAGES)) {
-  fs.mkdirSync(PUBLIC_IMAGES, { recursive: true });
-}
+const BUCKET = 'story-images';
 
 export async function downloadAndSaveImage(url: string, storyId: string, filename: string): Promise<string> {
-  const storyDir = path.join(PUBLIC_IMAGES, storyId);
-  if (!fs.existsSync(storyDir)) {
-    fs.mkdirSync(storyDir, { recursive: true });
-  }
+  // Download image from URL (e.g. DALL·E)
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Failed to download image: ${response.statusText}`);
+  
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const storagePath = `${storyId}/${filename}`;
 
-  const filePath = path.join(storyDir, filename);
-  const relativePath = `/story-images/${storyId}/${filename}`;
+  // Upload to Supabase Storage (upsert to overwrite if exists)
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(storagePath, buffer, {
+      contentType: 'image/png',
+      upsert: true,
+    });
 
-  return new Promise((resolve, reject) => {
-    const protocol = url.startsWith('https') ? https : http;
-    protocol.get(url, (response) => {
-      if (response.statusCode === 301 || response.statusCode === 302) {
-        downloadAndSaveImage(response.headers.location!, storyId, filename)
-          .then(resolve)
-          .catch(reject);
-        return;
-      }
-      const fileStream = fs.createWriteStream(filePath);
-      response.pipe(fileStream);
-      fileStream.on('finish', () => {
-        fileStream.close();
-        resolve(relativePath);
-      });
-      fileStream.on('error', reject);
-    }).on('error', reject);
-  });
+  if (error) throw new Error(`Failed to upload image: ${error.message}`);
+
+  return getStoragePublicUrl(BUCKET, storagePath);
 }
 
-export function deleteStoryImages(storyId: string) {
-  const storyDir = path.join(PUBLIC_IMAGES, storyId);
-  if (fs.existsSync(storyDir)) {
-    fs.rmSync(storyDir, { recursive: true });
+export async function deleteStoryImages(storyId: string) {
+  // List all files in the story folder
+  const { data: files } = await supabase.storage
+    .from(BUCKET)
+    .list(storyId);
+
+  if (files && files.length > 0) {
+    const paths = files.map(f => `${storyId}/${f.name}`);
+    await supabase.storage.from(BUCKET).remove(paths);
   }
 }

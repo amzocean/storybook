@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const all = searchParams.get('all') === 'true';
-  
-  const stories = db.prepare(`
-    SELECT s.*, COUNT(p.id) as page_count 
-    FROM stories s 
-    LEFT JOIN pages p ON p.story_id = s.id 
-    ${all ? '' : "WHERE s.status = 'published'"}
-    GROUP BY s.id 
-    ORDER BY s.created_at DESC
-  `).all();
+
+  let query = supabase.from('stories_with_page_count').select('*');
+  if (!all) {
+    query = query.eq('status', 'published');
+  }
+  const { data: stories, error } = await query.order('created_at', { ascending: false });
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(stories);
 }
 
@@ -20,10 +19,17 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { id, title, description, category, tags, cover_image, age_range, status } = body;
 
-  db.prepare(`
-    INSERT INTO stories (id, title, description, category, tags, cover_image, age_range, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(id, title, description, category, JSON.stringify(tags || []), cover_image, age_range || '5-8', status || 'draft');
+  const { error } = await supabase.from('stories').insert({
+    id,
+    title,
+    description,
+    category,
+    tags: tags || [],
+    cover_image,
+    age_range: age_range || '5-8',
+    status: status || 'draft',
+  });
 
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, id });
 }

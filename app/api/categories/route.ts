@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 
 export async function GET() {
-  const categories = db.prepare('SELECT * FROM categories ORDER BY name').all();
+  const { data: categories, error } = await supabase
+    .from('categories')
+    .select('*')
+    .order('name');
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(categories);
 }
