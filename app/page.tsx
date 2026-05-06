@@ -272,6 +272,15 @@ export default function HomePage() {
         <p className="text-white font-bold text-sm sm:text-base">
           Made with 💖 for Burhanuddin — Sparking stories for kids everywhere ✨
         </p>
+        <div className="mt-2 flex items-center justify-center gap-3 text-white/80 text-xs sm:text-sm">
+          <a href="mailto:storysparks.fun@gmail.com" className="hover:text-white underline underline-offset-2 transition-colors">
+            📬 Contact Us
+          </a>
+          <span>•</span>
+          <a href="mailto:storysparks.fun@gmail.com?subject=Bug%20Report%20-%20Story%20Sparks" className="hover:text-white underline underline-offset-2 transition-colors">
+            🐛 Report an Issue
+          </a>
+        </div>
       </footer>
     </div>
   );
