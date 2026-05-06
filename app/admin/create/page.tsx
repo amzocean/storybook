@@ -44,6 +44,7 @@ export default function CreateStoryPage() {
   // Step 3: Images
   const [generatingImages, setGeneratingImages] = useState(false);
   const [imageProgress, setImageProgress] = useState(0);
+  const [characterSheet, setCharacterSheet] = useState<{ name: string; appearance: string; style: string } | null>(null);
 
   // Step 4: Publish
   const [coverImage, setCoverImage] = useState('');
@@ -100,11 +101,12 @@ export default function CreateStoryPage() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'outline', premise, category, pageCount }),
+        body: JSON.stringify({ action: 'outline', premise, category, pageCount, title }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setPages(data.outline);
+      if (data.characterSheet) setCharacterSheet(data.characterSheet);
       // Auto-generate a title from the first page
       if (!title) {
         const words = premise.split(' ').slice(0, 5).join(' ');
@@ -162,6 +164,7 @@ export default function CreateStoryPage() {
             prompt: updated[i].imageDescription,
             storyId,
             pageNumber: i + 1,
+            characterSheet,
           }),
         });
         const data = await res.json();
@@ -334,6 +337,15 @@ export default function CreateStoryPage() {
           <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
             <h2 className="text-white text-2xl font-bold mb-2">📋 Story Outline</h2>
             <p className="text-gray-400 mb-6">Review and edit each page. Click a page to modify it.</p>
+
+            {characterSheet && (
+              <div className="bg-purple-900/30 border border-purple-500/30 rounded-xl p-4 mb-6">
+                <h3 className="text-purple-300 text-sm font-bold mb-2">🎭 Character Sheet (used for consistent illustrations)</h3>
+                <p className="text-white text-sm"><strong>Name:</strong> {characterSheet.name}</p>
+                <p className="text-white text-sm"><strong>Look:</strong> {characterSheet.appearance}</p>
+                <p className="text-white text-sm"><strong>Art Style:</strong> {characterSheet.style}</p>
+              </div>
+            )}
 
             <div className="space-y-3 mb-8">
               {pages.map((page, i) => (

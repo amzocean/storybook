@@ -9,9 +9,12 @@ export async function POST(request: NextRequest) {
   try {
     switch (action) {
       case 'outline': {
-        const { premise, category, pageCount } = body;
-        const outline = await generateStoryOutline(premise, category, pageCount || 6);
-        return NextResponse.json({ outline });
+        const { premise, category, pageCount, title } = body;
+        const result = await generateStoryOutline(premise, category, pageCount || 6, title || '');
+        // New format returns { characterSheet, pages } — extract both
+        const outline = result.pages || result;
+        const characterSheet = result.characterSheet || null;
+        return NextResponse.json({ outline, characterSheet });
       }
 
       case 'regenerate-page': {
@@ -21,8 +24,8 @@ export async function POST(request: NextRequest) {
       }
 
       case 'generate-image': {
-        const { prompt, storyId, pageNumber } = body;
-        const imageUrl = await generateImage(prompt);
+        const { prompt, storyId, pageNumber, characterSheet } = body;
+        const imageUrl = await generateImage(prompt, characterSheet || undefined);
         const savedPath = await downloadAndSaveImage(imageUrl, storyId, `page-${pageNumber}.png`);
         return NextResponse.json({ imageUrl: savedPath });
       }
