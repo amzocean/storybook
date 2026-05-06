@@ -58,6 +58,9 @@ storynook/
 ├── public/
 │   └── favicon.svg              # Custom book icon (blue-purple gradient)
 ├── supabase-setup.sql           # Full DB schema + seed data (run in Supabase SQL Editor)
+├── AGENTS.md                    # Copilot agent instructions
+├── CLAUDE.md                    # Claude project context
+├── README.md                    # GitHub readme
 ├── .env.local                   # API keys (gitignored)
 ├── next.config.ts               # Image config
 └── package.json
@@ -138,7 +141,7 @@ Joins `stories` with a page count subquery. Used by the `GET /api/stories` route
 |--------|-----------------|--------------------|------------------------------------------------------|---------|
 | POST   | `/api/generate` | `outline`          | premise, category, pageCount, title, detailLevel     | `{ outline: [...], characterSheet }` |
 | POST   | `/api/generate` | `regenerate-page`  | currentText, instruction, storyContext               | `{ text, imageDescription }` |
-| POST   | `/api/generate` | `generate-image`   | prompt, storyId, pageNumber                          | `{ imageUrl }` — Supabase Storage URL |
+| POST   | `/api/generate` | `generate-image`   | prompt, storyId, pageNumber, characterSheet (optional) | `{ imageUrl }` — Supabase Storage URL |
 | POST   | `/api/generate` | `generate-cover`   | title, description, category, storyId                | `{ imageUrl }` — Supabase Storage URL |
 
 The `outline` action runs the full 3-layer content safety pipeline before generation (see Content Safety below).
@@ -182,11 +185,11 @@ Kids can edit any page text in the outline step. The system tracks which pages w
 
 | Level | Sentences/Page | Vocabulary  | Age Label |
 |-------|---------------|-------------|-----------|
-| 1     | 1–2           | simple      | 2–3       |
-| 2     | 2–3           | easy        | 4–5       |
-| 3     | 3–4           | moderate    | 5–7       |
-| 4     | 4–5           | rich        | 7–9       |
-| 5     | 5–7           | advanced    | 8–10      |
+| 1     | 1             | very simple (toddler) | 2–3       |
+| 2     | 2             | simple (early readers)| 4–5       |
+| 3     | 3–4           | age-appropriate       | 5–7       |
+| 4     | 4–5           | rich, descriptive     | 7–9       |
+| 5     | 5–6           | vivid, expressive     | 8–10      |
 
 Default is level 3. The slider is on the create page (Step 1).
 
