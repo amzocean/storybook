@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateStoryOutline, regeneratePageText, generateImage, generateCoverImage, moderateContent, verifyKidFriendly, validatePremise } from '@/lib/openai';
+import { generateStoryOutline, regeneratePageText, generateImage, generateCoverImage, syncImageDescriptions, moderateContent, verifyKidFriendly, validatePremise } from '@/lib/openai';
 import { downloadAndSaveImage } from '@/lib/storage';
 import { checkRateLimit } from '@/lib/rate-limit';
 
@@ -63,6 +63,12 @@ export async function POST(request: NextRequest) {
         const imageUrl = await generateCoverImage(title, description, category);
         const savedPath = await downloadAndSaveImage(imageUrl, storyId, 'cover.png');
         return NextResponse.json({ imageUrl: savedPath });
+      }
+
+      case 'sync-descriptions': {
+        const { editedPages, storyContext, characterSheet } = body;
+        const results = await syncImageDescriptions(editedPages, storyContext, characterSheet || undefined);
+        return NextResponse.json({ descriptions: results });
       }
 
       default:

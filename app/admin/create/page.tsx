@@ -189,6 +189,41 @@ export default function CreateStoryPage() {
     setGeneratingImages(true);
     setImageProgress(0);
     const updated = [...pages];
+
+    // Sync image descriptions for manually edited pages
+    const staleIndices = [...editedByKid];
+    if (staleIndices.length > 0) {
+      try {
+        const editedPages = staleIndices.map(i => ({
+          pageNumber: i + 1,
+          text: updated[i].text,
+        }));
+        const storyContext = updated.map(p => p.text).join(' ');
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'sync-descriptions',
+            editedPages,
+            storyContext,
+            characterSheet,
+          }),
+        });
+        const data = await res.json();
+        if (data.descriptions) {
+          for (const desc of data.descriptions) {
+            const idx = desc.pageNumber - 1;
+            if (idx >= 0 && idx < updated.length) {
+              updated[idx] = { ...updated[idx], imageDescription: desc.imageDescription };
+            }
+          }
+          setPages([...updated]);
+        }
+      } catch (e) {
+        console.error('Failed to sync image descriptions, using originals');
+      }
+    }
+
     const concurrency = 3;
     let completed = 0;
 

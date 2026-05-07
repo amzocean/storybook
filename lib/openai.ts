@@ -192,6 +192,47 @@ Do NOT include any text or words in the image.`;
   return response.data?.[0]?.url || '';
 }
 
+export async function syncImageDescriptions(
+  editedPages: { pageNumber: number; text: string }[],
+  storyContext: string,
+  characterSheet?: { name: string; appearance: string; style: string }
+): Promise<{ pageNumber: number; imageDescription: string }[]> {
+  const charDesc = characterSheet
+    ? `Main character: ${characterSheet.name} — ${characterSheet.appearance}. Art style: ${characterSheet.style}.`
+    : '';
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      {
+        role: 'system',
+        content: `You are an illustrator's assistant for a children's storybook. Given page text, write a vivid image description for each page that a DALL·E illustrator can use.
+        ${charDesc}
+        
+        RULES:
+        1. Each description should capture the key scene, characters, poses, setting, and mood.
+        2. If a character sheet is provided, include the character's full appearance in EVERY description for visual consistency.
+        3. Keep descriptions concise but visually rich (2-3 sentences).
+        4. Return ONLY valid JSON, no markdown fencing.`
+      },
+      {
+        role: 'user',
+        content: `Full story context: ${storyContext}
+
+Generate image descriptions for these edited pages:
+${editedPages.map(p => `Page ${p.pageNumber}: "${p.text}"`).join('\n')}
+
+Return a JSON array: [{"pageNumber": N, "imageDescription": "..."}]`
+      }
+    ],
+    temperature: 0.7,
+  });
+
+  const content = response.choices[0].message.content || '[]';
+  const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  return JSON.parse(cleaned);
+}
+
 export async function generateCoverImage(title: string, description: string, category: string): Promise<string> {
   const response = await openai.images.generate({
     model: 'dall-e-3',
