@@ -369,6 +369,7 @@ DNS records configured at GoDaddy:
 - **No rejected story notification** — kids don't get feedback on why a story was rejected
 
 ### Potential Enhancements
+- **Email notifications on story submission** — Send an email to the admin when a story is submitted for review (`pending_review`). Use Resend (free tier: 100 emails/day) with a `lib/email.ts` helper called from `/api/stories/[id]/publish`. Requires `RESEND_API_KEY` and `NOTIFICATION_EMAIL` env vars.
 - **Stable Diffusion migration** — Replace DALL·E 3 with Stable Diffusion (SDXL/SD3/Flux) via Replicate or fal.ai API for ~5-10x cost savings ($0.005-0.01 vs $0.04-0.08 per image). Quality is comparable for storybook-style art. Could also fine-tune a LoRA for consistent illustration style across stories.
 - Text-to-speech (read-aloud mode)
 - Multiple user profiles (siblings)
