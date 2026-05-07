@@ -596,27 +596,46 @@ export default function CreateStoryPage() {
               className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white text-xl font-bold mb-4"
             />
 
-            {/* Author name + credit preview */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
-              <label className="text-white text-sm font-medium mb-2 block">✍️ Author Name</label>
-              <input
-                value={authorName}
-                onChange={e => setAuthorName(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white mb-3"
-                placeholder="What's your name?"
-              />
-              {authorName && (
-                <div className={`text-center py-2 rounded-lg text-sm font-medium ${
-                  authorCredit === 'authored' ? 'bg-yellow-500/20 text-yellow-300' :
-                  authorCredit === 'coauthored' ? 'bg-blue-500/20 text-blue-300' :
-                  'bg-purple-500/20 text-purple-300'
-                }`}>
-                  {creditLine}
-                  <span className="block text-xs opacity-70 mt-1">
-                    {editedByKid.size}/{pages.length} pages written by you {'⭐'.repeat(editedByKid.size)}
-                  </span>
+            {/* Author Certificate */}
+            <div className="relative mb-8">
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-400 rounded-3xl blur-sm opacity-30" />
+              <div className="relative bg-gradient-to-b from-amber-950/80 via-yellow-950/60 to-amber-950/80 border-2 border-yellow-500/50 rounded-3xl p-1">
+                <div className="border border-yellow-600/40 border-dashed rounded-2xl p-6 sm:p-8 text-center">
+                  <div className="text-yellow-400/60 text-2xl tracking-[0.5em] mb-2">✦ ✦ ✦</div>
+                  <h3 className="text-yellow-300 text-xs uppercase tracking-[0.3em] font-semibold mb-1">Certificate of Authorship</h3>
+                  <div className="w-16 h-px bg-gradient-to-r from-transparent via-yellow-500/60 to-transparent mx-auto mb-4" />
+
+                  <p className="text-amber-200/70 text-sm italic mb-3">This story was brought to life by</p>
+
+                  <input
+                    value={authorName}
+                    onChange={e => setAuthorName(e.target.value)}
+                    className="w-full max-w-sm mx-auto block px-4 py-3 bg-transparent border-b-2 border-yellow-500/40 text-white text-2xl text-center font-serif placeholder:text-white/25 focus:border-yellow-400 focus:outline-none transition-colors"
+                    placeholder="Your name here..."
+                  />
+
+                  {authorName ? (
+                    <div className="mt-4">
+                      <div className={`inline-block px-6 py-2 rounded-full text-sm font-bold tracking-wide ${
+                        authorCredit === 'authored' ? 'bg-yellow-500/25 text-yellow-300 ring-1 ring-yellow-500/40' :
+                        authorCredit === 'coauthored' ? 'bg-blue-500/25 text-blue-300 ring-1 ring-blue-500/40' :
+                        'bg-purple-500/25 text-purple-300 ring-1 ring-purple-500/40'
+                      }`}>
+                        {authorCredit === 'authored' ? '⭐ Full Author' : authorCredit === 'coauthored' ? '🤝 Co-Author' : '💡 Story Creator'}
+                      </div>
+                      <p className="text-amber-200/50 text-xs mt-2 italic">{creditLine}</p>
+                      <p className="text-yellow-500/40 text-xs mt-1">
+                        {editedByKid.size}/{pages.length} pages written by you {'⭐'.repeat(editedByKid.size)}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-pink-400 text-sm mt-4 animate-pulse">✨ Every great story deserves a name on it!</p>
+                  )}
+
+                  <div className="w-16 h-px bg-gradient-to-r from-transparent via-yellow-500/60 to-transparent mx-auto mt-4 mb-2" />
+                  <div className="text-yellow-400/60 text-2xl tracking-[0.5em]">✦ ✦ ✦</div>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Cover */}
@@ -652,12 +671,15 @@ export default function CreateStoryPage() {
               </button>
               <button
                 onClick={publishStory}
-                disabled={publishing}
+                disabled={publishing || !authorName.trim()}
                 className="flex-1 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold rounded-xl text-lg disabled:opacity-50"
               >
                 {publishing ? '📤 Publishing...' : '🚀 Publish to Library!'}
               </button>
             </div>
+            {!authorName.trim() && (
+              <p className="text-center text-pink-400 text-sm mt-2 animate-pulse">⬆️ Please add your name above before publishing!</p>
+            )}
           </div>
         </div>
       )}
