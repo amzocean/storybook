@@ -39,7 +39,7 @@ storynook/
 │   │   └── [id]/page.tsx        # Full-screen story reader
 │   ├── admin/
 │   │   ├── page.tsx             # Admin dashboard (PIN-protected, moderation queue)
-│   │   ├── create/page.tsx      # 4-step wizard with co-author mode (no PIN)
+│   │   ├── create/page.tsx      # 4-step wizard with co-author + write mode (no PIN)
 │   │   └── manage/[id]/page.tsx # Story editor (text, images, metadata)
 │   └── api/
 │       ├── stories/
@@ -168,8 +168,9 @@ In-memory rate limiter in `lib/rate-limit.ts`:
 - Resets on Vercel cold starts (ephemeral)
 - Returns kid-friendly messages ("Story Sparks is resting for today! 🌙")
 
-### Co-Author Mode
+### Co-Author Mode & Write Mode
 
+**Co-Author Mode (AI-generated stories)**:
 Kids can edit any page text in the outline step. The system tracks which pages were edited:
 
 - `editedByKid: Set<number>` — tracks page indices the kid modified
@@ -178,6 +179,17 @@ Kids can edit any page text in the outline step. The system tracks which pages w
 - **50%+ edited** → `author_credit = 'authored'`
 - Edited pages show a ⭐ star badge in the outline
 - Author credit displayed on the final "The End" page in the reader
+
+**Write Mode (blank pages)**:
+Kid writes all page text from scratch. AI only generates illustrations.
+
+- `mode: 'ai' | 'write'` state controls which flow is active
+- Write mode creates empty `PageDraft` objects and marks all pages as `editedByKid`
+- `author_credit` is always `'authored'` in write mode
+- Co-author score banner is hidden (no AI text to compare against)
+- "Make It Shine" and "Surprise Me" buttons still work (kid can ask AI for help)
+- All pages must have text before "Generate Illustrations" is enabled
+- The premise/story idea field provides context for DALL·E image generation
 
 ### Detail Level System
 
@@ -276,8 +288,12 @@ PIN `1234` is checked client-side in two files:
 ### Story Creator (`/admin/create`)
 - **No PIN** — kids can access directly
 - 4-step wizard: Premise → Outline → Story & Art → Publish
-- **Step 1**: Title, premise, category, page count, detail level slider (1–5), author name
-- **Step 2**: AI generates outline. Co-author mode: editable textareas, "Make It Shine ✨" (AI polish), "Surprise Me 🎲" (AI rewrite), ⭐ badges on edited pages
+- **Step 1**: Title, premise (200-char max with counter/hints), category, page count, detail level slider (1–5)
+- **Two creation modes** (chosen via buttons at bottom of Step 1):
+  - **"🪄 Generate Story Outline"** — AI generates text from the premise (existing flow, unchanged)
+  - **"✏️ I want to write it myself"** — creates blank pages for the kid to write on; AI only generates illustrations
+- **Step 2 (AI mode)**: AI-generated outline. Co-author mode: editable textareas, "Make It Shine ✨" (AI polish), "Surprise Me 🎲" (AI rewrite), ⭐ badges on edited pages
+- **Step 2 (Write mode)**: Blank textareas for each page. Heading says "Write Your Story". Co-author score hidden. All pages marked as kid-written. Cannot proceed to art until every page has text.
 - **Step 3**: Parallel DALL·E image generation (3 workers) with StarCatcher minigame
 - **Step 4**: Review, add cover image, publish (goes to `pending_review`)
 
