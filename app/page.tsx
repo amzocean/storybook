@@ -111,10 +111,9 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowHowItWorks(true)}
-              className="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all text-lg"
-              title="How It Works"
+              className="px-4 py-2 sm:py-2.5 bg-white/20 hover:bg-white/30 rounded-full text-white text-xs sm:text-sm font-semibold transition-all whitespace-nowrap"
             >
-              ❓
+              How It Works
             </button>
             <Link
               href="/admin/create"
