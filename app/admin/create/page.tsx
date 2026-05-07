@@ -34,6 +34,7 @@ export default function CreateStoryPage() {
   const [pageCount, setPageCount] = useState(6);
   const [detailLevel, setDetailLevel] = useState(3);
   const [title, setTitle] = useState('');
+  const [mode, setMode] = useState<'ai' | 'write'>('ai');
 
   // Step 2: Outline
   const [pages, setPages] = useState<PageDraft[]>([]);
@@ -55,7 +56,8 @@ export default function CreateStoryPage() {
 
   // Compute author credit type
   const kidPageRatio = pages.length > 0 ? editedByKid.size / pages.length : 0;
-  const authorCredit = kidPageRatio >= 0.5 ? 'authored' : kidPageRatio > 0 ? 'coauthored' : 'imagined';
+  const authorCredit = mode === 'write' ? 'authored'
+    : kidPageRatio >= 0.5 ? 'authored' : kidPageRatio > 0 ? 'coauthored' : 'imagined';
   const creditLine = authorName
     ? authorCredit === 'authored' ? `Story authored by ${authorName} ✨`
     : authorCredit === 'coauthored' ? `Story co-authored by ${authorName}`
@@ -97,6 +99,26 @@ export default function CreateStoryPage() {
       setError(e.message || 'Failed to generate outline');
     }
     setLoading(false);
+  };
+
+  // Start with blank pages — kid writes everything
+  const startBlankPages = () => {
+    setMode('write');
+    const blankPages: PageDraft[] = Array.from({ length: pageCount }, (_, i) => ({
+      pageNumber: i + 1,
+      text: '',
+      imageDescription: '',
+    }));
+    setPages(blankPages);
+    // All pages count as kid-written
+    setEditedByKid(new Set(blankPages.map((_, i) => i)));
+    setOriginalTexts({});
+    // Auto-generate a title from the premise if not set
+    if (!title && premise) {
+      const words = premise.split(' ').slice(0, 5).join(' ');
+      setTitle(words.charAt(0).toUpperCase() + words.slice(1));
+    }
+    setStep(1);
   };
 
   // Regenerate a single page
@@ -373,13 +395,33 @@ export default function CreateStoryPage() {
               placeholder="e.g., Rex's Space Adventure"
             />
 
-            <label className="text-white text-sm font-medium mb-2 block">Your Story Idea</label>
+            <label className="text-white text-sm font-medium mb-1 block">Your Story Idea</label>
+            <p className="text-gray-400 text-xs mb-2">
+              💡 Just a short idea — 1 or 2 sentences is perfect! The AI will turn it into a full story for you.
+            </p>
             <textarea
               value={premise}
-              onChange={e => setPremise(e.target.value)}
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white mb-4 h-28 resize-none"
+              onChange={e => {
+                if (e.target.value.length <= 200) setPremise(e.target.value);
+              }}
+              maxLength={200}
+              className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white h-24 resize-none ${
+                premise.length > 180 ? 'border-amber-400/60' : 'border-white/20'
+              }`}
               placeholder="e.g., A friendly dinosaur who travels to outer space and makes friends with an alien..."
             />
+            <div className="flex justify-between items-center mb-4">
+              <p className="text-gray-500 text-xs">
+                {premise.length === 0
+                  ? '✨ Try: "A bunny who finds a magic key in the garden"'
+                  : premise.length > 150
+                  ? '👍 That\'s plenty! Keep it short — you can edit the full story next.'
+                  : ''}
+              </p>
+              <span className={`text-xs ${premise.length > 180 ? 'text-amber-400' : 'text-gray-500'}`}>
+                {premise.length}/200
+              </span>
+            </div>
 
             <label className="text-white text-sm font-medium mb-2 block">Categories <span className="text-white/50">(pick one or more)</span></label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
@@ -436,7 +478,7 @@ export default function CreateStoryPage() {
             </p>
 
             <button
-              onClick={generateOutline}
+              onClick={() => { setMode('ai'); generateOutline(); }}
               disabled={!premise || loading || selectedCategories.length === 0}
               className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold rounded-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
@@ -447,6 +489,19 @@ export default function CreateStoryPage() {
                 </span>
               ) : '🪄 Generate Story Outline'}
             </button>
+
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
+              <div className="relative flex justify-center"><span className="bg-white/5 px-3 text-gray-500 text-xs">or</span></div>
+            </div>
+
+            <button
+              onClick={startBlankPages}
+              disabled={loading || selectedCategories.length === 0}
+              className="w-full py-3 bg-white/5 border border-white/20 hover:bg-white/10 text-white/70 hover:text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              ✏️ I want to write it myself — start with blank pages
+            </button>
           </div>
         </div>
       )}
@@ -455,10 +510,17 @@ export default function CreateStoryPage() {
       {step === 1 && (
         <div className="max-w-3xl mx-auto px-6">
           <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-8">
-            <h2 className="text-white text-xl sm:text-2xl font-bold mb-2">✏️ Co-Author Mode</h2>
-            <p className="text-gray-400 mb-2">Write your own version of each page, or keep the AI&apos;s suggestion!</p>
+            <h2 className="text-white text-xl sm:text-2xl font-bold mb-2">
+              {mode === 'write' ? '✏️ Write Your Story' : '✏️ Co-Author Mode'}
+            </h2>
+            <p className="text-gray-400 mb-2">
+              {mode === 'write'
+                ? 'Write what happens on each page — AI will illustrate your words!'
+                : 'Write your own version of each page, or keep the AI\'s suggestion!'}
+            </p>
             
-            {/* Co-author score */}
+            {/* Co-author score — only in AI mode */}
+            {mode === 'ai' && (
             <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-2 mb-6 flex items-center gap-2">
               <span className="text-yellow-400 text-lg">{'⭐'.repeat(editedByKid.size)}{editedByKid.size === 0 ? '📝' : ''}</span>
               <span className="text-yellow-200 text-sm font-medium">
@@ -467,6 +529,7 @@ export default function CreateStoryPage() {
                   : `You wrote ${editedByKid.size}/${pages.length} pages!`}
               </span>
             </div>
+            )}
 
             {characterSheet && (
               <div className="bg-purple-900/30 border border-purple-500/30 rounded-xl p-4 mb-6">
@@ -535,11 +598,15 @@ export default function CreateStoryPage() {
               </button>
               <button
                 onClick={() => { setStep(2); generateAllImages(); }}
-                className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl text-lg"
+                disabled={mode === 'write' && pages.some(p => !p.text.trim())}
+                className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 🎨 Generate Illustrations
               </button>
             </div>
+            {mode === 'write' && pages.some(p => !p.text.trim()) && (
+              <p className="text-center text-amber-400 text-xs mt-2">✏️ Write something on every page before generating art!</p>
+            )}
           </div>
         </div>
       )}
