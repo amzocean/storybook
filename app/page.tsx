@@ -117,13 +117,6 @@ export default function HomePage() {
               ❓
             </button>
             <Link
-              href="/admin"
-              className="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all text-lg"
-              title="Manage Stories"
-            >
-              ⚙️
-            </Link>
-            <Link
               href="/admin/create"
               className="px-5 sm:px-6 py-2.5 sm:py-3 bg-yellow-400 hover:bg-yellow-300 text-gray-900 rounded-full text-sm sm:text-base font-extrabold transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 animate-pulse hover:animate-none whitespace-nowrap"
               title="Create Story"
@@ -369,9 +362,9 @@ export default function HomePage() {
             📬 Contact Us
           </a>
           <span>•</span>
-          <a href="mailto:storysparks.fun@gmail.com?subject=Bug%20Report%20-%20Story%20Sparks" className="hover:text-white underline underline-offset-2 transition-colors">
-            🐛 Report an Issue
-          </a>
+          <Link href="/admin" className="hover:text-white underline underline-offset-2 transition-colors">
+            ⚙️ Settings
+          </Link>
         </div>
       </footer>
     </div>
