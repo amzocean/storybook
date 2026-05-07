@@ -46,7 +46,11 @@ INSERT INTO categories (id, name, emoji, color) VALUES
   ('fairy-tales', 'Fairy Tales', '🧚', '#9C27B0'),
   ('adventure', 'Adventure', '⚔️', '#F44336'),
   ('underwater', 'Underwater', '🐠', '#00BCD4'),
-  ('robots', 'Robots', '🤖', '#607D8B')
+  ('robots', 'Robots', '🤖', '#607D8B'),
+  ('funny', 'Funny', '😂', '#FFEB3B'),
+  ('learning', 'Learning', '🧠', '#8BC34A'),
+  ('fantasy', 'Fantasy', '🧙', '#673AB7'),
+  ('sports', 'Sports', '⚽', '#E91E63')
 ON CONFLICT (id) DO NOTHING;
 
 -- Create index for faster page lookups

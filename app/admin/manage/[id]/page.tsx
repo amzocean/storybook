@@ -46,7 +46,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ id: string
   // Editable fields
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [ageRange, setAgeRange] = useState('5-8');
   const [pages, setPages] = useState<Page[]>([]);
   const [editingPageIdx, setEditingPageIdx] = useState<number | null>(null);
@@ -63,7 +63,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ id: string
         setStory(storyData);
         setTitle(storyData.title);
         setDescription(storyData.description || '');
-        setCategory(storyData.category);
+        setSelectedCategories((storyData.category || '').split(',').filter(Boolean));
         setAgeRange(storyData.age_range || '5-8');
         setPages(storyData.pages || []);
         setCategories(cats);
@@ -82,7 +82,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ id: string
       await fetch(`/api/stories/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description, category, age_range: ageRange, tags: [], cover_image: story?.cover_image }),
+        body: JSON.stringify({ title, description, category: selectedCategories.join(','), age_range: ageRange, tags: selectedCategories, cover_image: story?.cover_image }),
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -190,7 +190,7 @@ export default function EditStoryPage({ params }: { params: Promise<{ id: string
         await fetch(`/api/stories/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, description, category, age_range: ageRange, tags: [], cover_image: data.cover_path }),
+          body: JSON.stringify({ title, description, category: selectedCategories.join(','), age_range: ageRange, tags: selectedCategories, cover_image: data.cover_path }),
         });
       }
     } catch {
@@ -310,16 +310,28 @@ export default function EditStoryPage({ params }: { params: Promise<{ id: string
               />
             </div>
             <div>
-              <label className="block text-gray-400 text-sm mb-1">Category</label>
-              <select
-                value={category}
-                onChange={e => setCategory(e.target.value)}
-                className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white"
-              >
-                {categories.map(c => (
-                  <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>
-                ))}
-              </select>
+              <label className="block text-gray-400 text-sm mb-1">Categories</label>
+              <div className="flex flex-wrap gap-2">
+                {categories.map(c => {
+                  const isSelected = selectedCategories.includes(c.id);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => setSelectedCategories(prev =>
+                        isSelected ? prev.filter(x => x !== c.id) : [...prev, c.id]
+                      )}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                        isSelected
+                          ? 'ring-2 ring-purple-400 bg-white/15 text-white'
+                          : 'bg-white/5 text-white/60 hover:bg-white/10'
+                      }`}
+                    >
+                      {c.emoji} {c.name}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <div>
               <label className="block text-gray-400 text-sm mb-1">Age Range</label>

@@ -9,7 +9,7 @@ interface Story {
   id: string;
   title: string;
   description: string;
-  category: string;
+  category: string; // comma-separated for multi-category
   cover_image: string;
   status: string;
   created_at: string;
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
                     </div>
                     <p className="text-gray-400 text-sm truncate">{story.description || 'No description'}</p>
                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
-                      <span>📂 {story.category}</span>
+                      <span>📂 {(story.category || '').split(',').join(', ')}</span>
                       <span>📄 {story.page_count} pages</span>
                       <span>🕐 {new Date(story.created_at).toLocaleDateString()}</span>
                     </div>

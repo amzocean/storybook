@@ -30,7 +30,7 @@ export default function CreateStoryPage() {
 
   // Step 1: Premise
   const [premise, setPremise] = useState('');
-  const [category, setCategory] = useState('adventure');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(['adventure']);
   const [pageCount, setPageCount] = useState(6);
   const [detailLevel, setDetailLevel] = useState(3);
   const [title, setTitle] = useState('');
@@ -76,7 +76,7 @@ export default function CreateStoryPage() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'outline', premise, category, pageCount, title, detailLevel }),
+        body: JSON.stringify({ action: 'outline', premise, category: selectedCategories.join(','), pageCount, title, detailLevel }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -268,7 +268,7 @@ export default function CreateStoryPage() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'generate-cover', title, description: premise, category, storyId }),
+        body: JSON.stringify({ action: 'generate-cover', title, description: premise, category: selectedCategories.join(','), storyId }),
       });
       const data = await res.json();
       if (data.imageUrl) setCoverImage(data.imageUrl);
@@ -289,8 +289,8 @@ export default function CreateStoryPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: storyId, title, description: premise, category,
-          tags: [category], cover_image: coverImage, status: 'published',
+          id: storyId, title, description: premise, category: selectedCategories.join(','),
+          tags: selectedCategories, cover_image: coverImage, status: 'published',
           detail_level: detailLevel,
           author_name: authorName || null,
           author_credit: authorCredit,
@@ -381,21 +381,30 @@ export default function CreateStoryPage() {
               placeholder="e.g., A friendly dinosaur who travels to outer space and makes friends with an alien..."
             />
 
-            <label className="text-white text-sm font-medium mb-2 block">Category</label>
+            <label className="text-white text-sm font-medium mb-2 block">Categories <span className="text-white/50">(pick one or more)</span></label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-              {categories.map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => setCategory(cat.id)}
-                  className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                    category === cat.id
-                      ? 'ring-2 ring-purple-400 bg-white/15 text-white'
-                      : 'bg-white/5 text-white/60 hover:bg-white/10'
-                  }`}
-                >
-                  {cat.emoji} {cat.name}
-                </button>
-              ))}
+              {categories.map(cat => {
+                const isSelected = selectedCategories.includes(cat.id);
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      setSelectedCategories(prev =>
+                        isSelected
+                          ? prev.filter(c => c !== cat.id)
+                          : [...prev, cat.id]
+                      );
+                    }}
+                    className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                      isSelected
+                        ? 'ring-2 ring-purple-400 bg-white/15 text-white'
+                        : 'bg-white/5 text-white/60 hover:bg-white/10'
+                    }`}
+                  >
+                    {cat.emoji} {cat.name}
+                  </button>
+                );
+              })}
             </div>
 
             <label className="text-white text-sm font-medium mb-2 block">Number of Pages</label>
@@ -428,7 +437,7 @@ export default function CreateStoryPage() {
 
             <button
               onClick={generateOutline}
-              disabled={!premise || loading}
+              disabled={!premise || loading || selectedCategories.length === 0}
               className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold rounded-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loading ? (

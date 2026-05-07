@@ -23,7 +23,7 @@ interface Story {
   id: string;
   title: string;
   description: string;
-  category: string;
+  category: string; // comma-separated for multi-category
   cover_image: string;
   page_count: number;
   tags: string;
@@ -70,7 +70,8 @@ export default function HomePage() {
   }, []);
 
   const filteredStories = stories.filter(s => {
-    const catMatch = selectedCategory === 'all' || s.category === selectedCategory;
+    const storyCategories = (s.category || '').split(',').map(c => c.trim());
+    const catMatch = selectedCategory === 'all' || storyCategories.includes(selectedCategory);
     const readerMatch = selectedReader === 'all' || 
       readerLevels.find(r => r.id === selectedReader)?.levels.includes(s.detail_level || 3);
     return catMatch && readerMatch;
@@ -239,7 +240,7 @@ export default function HomePage() {
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
               {filteredStories.map(story => {
-                const cat = getCategoryInfo(story.category);
+                const cat = getCategoryInfo((story.category || '').split(',')[0]?.trim());
                 return (
                   <Link key={story.id} href={`/read/${story.id}`} className="group">
                     <div className="relative aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden bg-white border-4 border-white shadow-lg group-hover:shadow-2xl transition-all group-hover:scale-105 group-hover:-rotate-1 active:scale-95">
