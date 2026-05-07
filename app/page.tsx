@@ -345,7 +345,7 @@ export default function HomePage() {
 
             <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl text-center">
               <p className="text-sm text-gray-600 mb-3">
-                <strong>You</strong> decide how much to write. Give just an idea 💡, co-author with AI 🤝, or write every word yourself ✨ — you&apos;ll get credit for your work!
+                <strong>You</strong>{' '}decide how much to write. Give just an idea 💡, co-author with AI 🤝, or write every word yourself ✨ — you&apos;ll get credit for your work!
               </p>
               <Link
                 href="/admin/create"
