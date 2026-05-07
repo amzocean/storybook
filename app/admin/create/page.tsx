@@ -431,7 +431,12 @@ export default function CreateStoryPage() {
               disabled={!premise || loading}
               className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold rounded-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              {loading ? '🪄 Generating...' : '🪄 Generate Story Outline'}
+              {loading ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Writing your story...
+                </span>
+              ) : '🪄 Generate Story Outline'}
             </button>
           </div>
         </div>
