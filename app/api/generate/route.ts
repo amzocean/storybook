@@ -3,8 +3,8 @@ import { generateStoryOutline, regeneratePageText, generateImage, generateCoverI
 import { downloadAndSaveImage } from '@/lib/storage';
 import { checkRateLimit } from '@/lib/rate-limit';
 
-// DALL-E 3 image generation takes 15-30s; Vercel's default timeout (10s) is too short
-export const maxDuration = 60;
+// DALL-E 3 image generation + download + Supabase upload can exceed 60s
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
