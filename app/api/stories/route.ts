@@ -5,11 +5,17 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const all = searchParams.get('all') === 'true';
 
-  let query = supabase.from('stories_with_page_count').select('*');
+  let query = supabase.from('stories').select('*, pages(id)');
   if (!all) {
     query = query.eq('status', 'published');
   }
-  const { data: stories, error } = await query.order('created_at', { ascending: false });
+  const { data: rawStories, error } = await query.order('created_at', { ascending: false });
+
+  // Add page_count from the joined pages
+  const stories = rawStories?.map(({ pages, ...story }) => ({
+    ...story,
+    page_count: Array.isArray(pages) ? pages.length : 0,
+  }));
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(stories);
