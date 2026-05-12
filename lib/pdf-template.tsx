@@ -426,7 +426,7 @@ export function ColoringPDF({
       <Page size={size} orientation="landscape" style={coloringStyles.page}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={coloringStyles.coverTitle}>{title}</Text>
-          <Text style={coloringStyles.coverSubtitle}>Coloring and Drawing Pages</Text>
+          <Text style={coloringStyles.coverSubtitle}>A Coloring Book</Text>
           {author_name && (
             <Text style={coloringStyles.coverAuthor}>
               {getAuthorLabel(author_credit)} {author_name}
@@ -434,7 +434,7 @@ export function ColoringPDF({
           )}
           <View style={{ width: 60, height: 2, backgroundColor: '#D1D5DB', marginVertical: 20, borderRadius: 1 }} />
           <Text style={{ fontFamily: FONT_SANS_OBLIQUE, fontSize: 13, color: GRAY, textAlign: 'center' }}>
-            Read the story, then draw your own pictures!
+            Color in the pictures and bring the story to life!
           </Text>
         </View>
         <View style={coloringStyles.footer}>
@@ -442,12 +442,18 @@ export function ColoringPDF({
         </View>
       </Page>
 
-      {/* Story pages with drawing frames */}
+      {/* Story pages with coloring images */}
       {validPages.map((p, i) => (
         <Page key={i} size={size} orientation="landscape" style={coloringStyles.page}>
-          <View style={coloringStyles.drawFrame}>
-            <Text style={coloringStyles.drawHint}>Draw your picture here!</Text>
-          </View>
+          {p.image_path ? (
+            <View style={coloringStyles.drawFrame}>
+              <Image src={p.image_path} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </View>
+          ) : (
+            <View style={coloringStyles.drawFrame}>
+              <Text style={coloringStyles.drawHint}>Draw your picture here!</Text>
+            </View>
+          )}
           <Text style={coloringStyles.storyText}>{p.text}</Text>
           <Text style={coloringStyles.pageNumber}>{i + 1}</Text>
           <View style={coloringStyles.footer}>

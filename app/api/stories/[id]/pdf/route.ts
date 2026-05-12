@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { renderToBuffer } from '@react-pdf/renderer';
 import React from 'react';
+import sharp from 'sharp';
 import { StoryPDF, ColoringPDF } from '@/lib/pdf-template';
 
 export const maxDuration = 300;
@@ -58,12 +59,35 @@ export async function GET(
     let filenameSuffix: string;
 
     if (mode === 'coloring') {
+      // Convert images to grayscale line-art style for coloring
+      const coloringPages = await Promise.all(
+        (pages || []).map(async (p: any) => {
+          if (!p.image_path) return p;
+          try {
+            const res = await fetch(p.image_path);
+            const imgBuffer = Buffer.from(await res.arrayBuffer());
+            // Grayscale + high contrast + lighter (so kids can color over lines)
+            const processed = await sharp(imgBuffer)
+              .grayscale()
+              .normalize()
+              .modulate({ brightness: 1.3 })
+              .linear(1.8, -90) // boost contrast for line-art feel
+              .png()
+              .toBuffer();
+            const dataUri = `data:image/png;base64,${processed.toString('base64')}`;
+            return { ...p, image_path: dataUri };
+          } catch {
+            return { ...p, image_path: null };
+          }
+        })
+      );
+
       buffer = await renderToBuffer(
         React.createElement(ColoringPDF, {
           title: story.title,
           author_name: story.author_name,
           author_credit: story.author_credit,
-          pages: pages || [],
+          pages: coloringPages,
           pageSize,
         })
       );
