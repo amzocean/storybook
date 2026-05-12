@@ -1,8 +1,24 @@
 # StoryNook: Vercel → Render.com Migration Plan
 
-## Problem
+## Status: ON HOLD — No longer needed for timeout reasons
 
-DALL-E 3 image generation takes 20-40s per image, but Vercel Hobby caps serverless functions at 10s. Vercel Pro ($20/mo) raises this to 300s but is expensive for a family app. Render.com ($7/mo Starter) runs a persistent Node.js server with no timeout limits.
+### Update (May 2026)
+
+The original motivation for this migration was a belief that Vercel Hobby caps serverless functions at 10s, which would cause DALL-E image generation (12-17s per image) to timeout. **This turned out to be incorrect.**
+
+**Findings:**
+- Vercel Hobby's **Proxied Request Timeout is 120 seconds** (verified from Vercel's limits page, updated March 2026)
+- The `maxDuration = 300` export in route.ts may or may not be respected on Hobby, but the 120s proxy timeout is more than sufficient
+- Actual image generation timing (from production logs): **12-17s per page** — well within the 120s limit
+- The actual image generation failure we encountered was **DALL-E content policy rejections** (real children's names in prompts), not timeouts. This was fixed by sanitizing names from image prompts.
+
+**Conclusion:** There is no timeout problem on Vercel Hobby. This migration plan is preserved for reference but is not needed unless other Vercel limitations arise (e.g., hitting the 100 deployments/day limit, 4 CPU-hrs/month, or 1M invocations/month).
+
+---
+
+## Original Problem (Debunked)
+
+~~DALL-E 3 image generation takes 20-40s per image, but Vercel Hobby caps serverless functions at 10s.~~ Vercel Hobby actually allows 120s proxy timeout. Render.com ($7/mo Starter) would run a persistent Node.js server with no timeout limits, but this is unnecessary given the actual limits.
 
 ## Approach
 
