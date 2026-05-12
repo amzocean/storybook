@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     fontFamily: FONT_SANS,
     fontSize: 9,
     color: '#9CA3AF',
-    letterSpacing: 1.5,
+    letterSpacing: 1.2,
   },
 });
 
@@ -225,7 +225,7 @@ function getAuthorLabel(credit?: string): string {
 
 const Footer = () => (
   <View style={styles.footer}>
-    <Text style={styles.footerText}>storysparks.fun</Text>
+    <Text style={styles.footerText}>Created with StorySparks.fun</Text>
   </View>
 );
 

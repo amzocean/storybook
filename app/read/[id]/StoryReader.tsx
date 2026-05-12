@@ -312,7 +312,7 @@ export default function StoryReader({ story }: { story: StoryData }) {
                 onClick={() => router.push('/admin/create')}
                 className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all"
               >
-                ✨ Create Your Own Story
+                ✨ Make Your Own Story
               </button>
               <button
                 onClick={handleShare}
@@ -325,7 +325,7 @@ export default function StoryReader({ story }: { story: StoryData }) {
                 download
                 className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all text-center"
               >
-                📄 Download PDF
+                🖨️ Download Printable Storybook
               </a>
               <button
                 onClick={() => router.push('/')}
