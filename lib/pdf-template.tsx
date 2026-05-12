@@ -98,76 +98,32 @@ const styles = StyleSheet.create({
     borderRadius: 1,
   },
 
-  // ─── Story pages — short text (big image, small text area) ──────────
-  storyPageShort: {
+  // ─── Story pages ──────────────────────────────────────────
+  storyPage: {
     backgroundColor: CREAM,
     flexDirection: 'column',
     padding: 0,
     position: 'relative',
   },
-  shortImageContainer: {
+  storyImageContainer: {
     width: '100%',
-    height: '70%',
+    height: '65%',
     overflow: 'hidden',
     backgroundColor: '#F5F0E8',
     flexDirection: 'row',
     justifyContent: 'center',
   },
-  shortImage: {
+  storyImage: {
     height: '100%',
     objectFit: 'cover',
   },
-  shortTextContainer: {
+  storyTextContainer: {
     flex: 1,
-    paddingHorizontal: 60,
+    paddingHorizontal: 50,
     paddingTop: 16,
     paddingBottom: 50,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  shortText: {
-    fontFamily: FONT_SANS,
-    fontSize: 22,
-    color: AMBER_DARK,
-    textAlign: 'center',
-    lineHeight: 1.7,
-    maxWidth: 580,
-  },
-
-  // ─── Story pages — long text (smaller image, more text room) ───────
-  storyPageLong: {
-    backgroundColor: CREAM,
-    flexDirection: 'column',
-    padding: 0,
-    position: 'relative',
-  },
-  longImageContainer: {
-    width: '100%',
-    height: '50%',
-    overflow: 'hidden',
-    backgroundColor: '#F5F0E8',
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  longImage: {
-    height: '100%',
-    objectFit: 'cover',
-  },
-  longTextContainer: {
-    flex: 1,
-    paddingHorizontal: 50,
-    paddingTop: 20,
-    paddingBottom: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  longText: {
-    fontFamily: FONT_SANS,
-    fontSize: 18,
-    color: AMBER_DARK,
-    textAlign: 'center',
-    lineHeight: 1.7,
-    maxWidth: 580,
   },
   pageNumber: {
     fontFamily: FONT_SANS,
@@ -321,33 +277,21 @@ export function StoryPDF({
         <Footer />
       </Page>
 
-      {/* ── Story pages (adaptive layout based on text length) ── */}
+      {/* ── Story pages ── */}
       {pages.map((p, i) => {
         const sentenceCount = (p.text.match(/[.!?](\s|$)/g) || []).length;
-        const isLong = sentenceCount >= 3 || p.text.length > 150;
+        const fontSize = sentenceCount >= 4 ? 16 : sentenceCount >= 3 ? 18 : 22;
+        const lineHeight = sentenceCount >= 4 ? 1.6 : 1.7;
 
-        return isLong ? (
-          <Page key={i} size="LETTER" orientation="landscape" style={styles.storyPageLong}>
+        return (
+          <Page key={i} size="LETTER" orientation="landscape" style={styles.storyPage}>
             {p.image_path && (
-              <View style={styles.longImageContainer}>
-                <Image src={p.image_path} style={styles.longImage} />
+              <View style={styles.storyImageContainer}>
+                <Image src={p.image_path} style={styles.storyImage} />
               </View>
             )}
-            <View style={styles.longTextContainer}>
-              <Text style={styles.longText}>{p.text}</Text>
-            </View>
-            <Text style={styles.pageNumber}>{i + 1}</Text>
-            <Footer />
-          </Page>
-        ) : (
-          <Page key={i} size="LETTER" orientation="landscape" style={styles.storyPageShort}>
-            {p.image_path && (
-              <View style={styles.shortImageContainer}>
-                <Image src={p.image_path} style={styles.shortImage} />
-              </View>
-            )}
-            <View style={styles.shortTextContainer}>
-              <Text style={styles.shortText}>{p.text}</Text>
+            <View style={styles.storyTextContainer}>
+              <Text style={{ fontFamily: FONT_SANS, fontSize, color: AMBER_DARK, textAlign: 'center' as const, lineHeight, maxWidth: 600 }}>{p.text}</Text>
             </View>
             <Text style={styles.pageNumber}>{i + 1}</Text>
             <Footer />
