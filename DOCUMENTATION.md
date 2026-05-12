@@ -5,8 +5,9 @@
 A kid-friendly, Netflix-style storybook website that lets children browse, read, and co-author illustrated stories. AI-powered story generation (OpenAI GPT-4o for text + DALL·E 3 for illustrations) with a 3-layer content safety system, moderation queue, and co-author mode so kids can write and edit their own stories.
 
 **GitHub Repo**: https://github.com/amzocean/storybook  
-**Live Site**: Deployed on Vercel (auto-deploys from `main`)  
-**Domain**: `storysparks.fun` (pending DNS setup)
+**Live Site**: https://storysparks.fun (deployed on Vercel, auto-deploys from `main`)  
+**Domain**: `storysparks.fun` (GoDaddy DNS → Vercel)  
+**Google Search Console**: Verified and sitemap submitted
 
 ---
 
@@ -57,7 +58,12 @@ storynook/
 │   └── rate-limit.ts            # In-memory per-IP + global daily rate limiter
 ├── public/
 │   └── favicon.svg              # Custom book icon (blue-purple gradient)
+├── scripts/
+│   ├── batch-generate.ts        # Batch story generation (SEO seed content)
+│   ├── story-seeds.ts           # 200+ story definitions across all categories/ages
+│   └── export-stories.ts        # Export story inventory to HTML report
 ├── supabase-setup.sql           # Full DB schema + seed data (run in Supabase SQL Editor)
+├── story-inventory.html         # Generated inventory report (categories × age groups)
 ├── AGENTS.md                    # Copilot agent instructions
 ├── CLAUDE.md                    # Claude project context
 ├── README.md                    # GitHub readme
@@ -85,7 +91,7 @@ Supabase Postgres. Schema defined in `supabase-setup.sql`.
 | detail_level | INTEGER     | 1–5, default `3`                          |
 | author_name  | TEXT        | Kid's display name (optional)             |
 | author_credit| TEXT        | `'imagined'`, `'coauthored'`, or `'authored'` |
-| status       | TEXT        | `'draft'`, `'pending_review'`, `'published'`, `'rejected'` |
+| status       | TEXT        | `'draft'`, `'published'`, `'rejected'` (auto-publishes on submit) |
 | created_at   | TIMESTAMPTZ | Default `now()`                           |
 | updated_at   | TIMESTAMPTZ | Default `now()`                           |
 
@@ -127,7 +133,13 @@ Joins `stories` with a page count subquery. Used by the `GET /api/stories` route
 | PUT    | `/api/stories/[id]`          | Partial update — send only changed fields. Used for approve/reject (status) |
 | DELETE | `/api/stories/[id]`          | Delete story + pages + Supabase Storage images  |
 | POST   | `/api/stories/[id]/pages`    | Add pages to a story                            |
-| POST   | `/api/stories/[id]/publish`  | Set status to `'published'`                     |
+| POST   | `/api/stories/[id]/publish`  | Set status to `'published'` (auto-publish, no approval needed) |
+
+### Search
+
+| Method | Endpoint          | Description                                              |
+|--------|-------------------|----------------------------------------------------------|
+| GET    | `/api/search?q=`  | Full-text search across title, description, tags, author_name |
 
 ### Categories
 
@@ -205,13 +217,13 @@ Kid writes all page text from scratch. AI only generates illustrations.
 
 Default is level 3. The slider is on the create page (Step 1).
 
-### Moderation Queue
+### Moderation / Publishing
 
-- Kids publish stories → status set to `'pending_review'`
+- Stories are **auto-published** — no mandatory admin approval required
+- When a kid publishes a story, status goes directly to `'published'`
 - Homepage `GET /api/stories` filters to `status = 'published'` only
-- Admin dashboard shows pending stories with approve/reject buttons
-- Approve: `PUT /api/stories/[id]` with `{ status: 'published' }`
-- Reject: `PUT /api/stories/[id]` with `{ status: 'rejected' }`
+- Admin can still **unpublish** any story from the admin dashboard
+- Admin dashboard shows all stories with publish/unpublish toggle and delete buttons
 
 ### Parallel DALL·E Image Generation
 
@@ -260,6 +272,7 @@ PIN `5678` is checked client-side in two files:
 - Bright sky-blue gradient with floating emoji decorations (stars, rainbow, dino, rocket, clouds)
 - Rainbow gradient header with ✨ logo and "Story Sparks" branding + always-visible "✏️ Create!" button
 - **Hero banner** (always visible): rotating mascot emoji (🦖🦄🐉🧙‍♂️🧜‍♀️🦊🐻🚀🧚🌈), randomized encouraging message, big Create CTA
+- **Search bar**: instant search across story titles, descriptions, tags, and author names with debounced input
 - Category filter pills (scrollable) + reader level filter
 - Story grid with cover images, hover animations (tilt + scale)
 - Responsive: 2 cols on mobile, up to 5 on desktop
@@ -281,8 +294,7 @@ PIN `5678` is checked client-side in two files:
 ### Admin Dashboard (`/admin`)
 - Dark theme (parent-facing), PIN protected
 - 4-column stats: total / pending review / published / drafts
-- Moderation queue: approve or reject pending stories
-- Story management: publish/unpublish, delete, edit
+- Story management: publish/unpublish toggle, delete, edit
 - Links to create wizard and individual story editors
 
 ### Story Creator (`/admin/create`)
@@ -376,6 +388,56 @@ DNS records configured at GoDaddy:
 
 ---
 
+## SEO
+
+### Dynamic Sitemap (`app/sitemap.ts`)
+- Auto-generates XML sitemap from all published stories in Supabase
+- Includes homepage, create page, and every `/read/[id]` story page
+- Updates automatically when new stories are published — no manual re-submission needed
+- Submitted to Google Search Console (verified May 2026)
+
+### Robots.txt (`app/robots.ts`)
+- Allows all crawlers, points to sitemap at `https://storysparks.fun/sitemap.xml`
+
+### Meta Tags
+- Root layout has title, description, Open Graph, and Twitter card metadata
+- Individual story pages generate dynamic OG tags (title, description, cover image)
+
+### Google Search Console
+- Domain verified: `storysparks.fun`
+- Sitemap submitted: `https://storysparks.fun/sitemap.xml`
+- Homepage is indexed ✅
+
+---
+
+## Batch Story Generation (SEO Seed Content)
+
+To build up SEO inventory, batch-generate stories using the scripts in `scripts/`:
+
+### Story Seeds (`scripts/story-seeds.ts`)
+Defines 200+ story templates across categories and age groups:
+- **Categories**: Adventure, Animals, Dinosaurs, Fairy Tales, Fantasy, Funny, Learning, Space, Underwater, Robots, plus Eid/Ramadan, LEGO, School, Siblings, Bedtime
+- **Age groups**: 2–3 (toddler), 4–5 (early reader), 5–7 (story time), 7–9 (chapter), 8–10 (advanced)
+- Each seed has: title, premise, category, detailLevel, pageCount, authorName
+
+### Batch Generator (`scripts/batch-generate.ts`)
+```bash
+npx tsx scripts/batch-generate.ts          # Generate all seeds
+npx tsx scripts/batch-generate.ts --count 20  # Generate first 20
+```
+- Calls the `/api/generate` and `/api/stories` endpoints
+- Generates outline → images → publishes each story
+- Random author names for variety
+- Logs progress to console
+
+### Story Inventory Export (`scripts/export-stories.ts`)
+```bash
+npx tsx scripts/export-stories.ts
+```
+- Exports all stories to `story-inventory.html` grouped by category and age range
+
+---
+
 ## Known Limitations & Future Ideas
 
 ### Current Limitations
@@ -383,17 +445,16 @@ DNS records configured at GoDaddy:
 - **No image optimization** — using `unoptimized: true` for Supabase Storage URLs
 - **Single language** — English only
 - **Rate limits reset on cold start** — in-memory Maps, not persistent
-- **No rejected story notification** — kids don't get feedback on why a story was rejected
+- **Coloring book PDF disabled** — temporarily disabled while improving grayscale rendering
 
 ### Potential Enhancements
-- **Email notifications on story submission** — Send an email to the admin when a story is submitted for review (`pending_review`). Use Resend (free tier: 100 emails/day) with a `lib/email.ts` helper called from `/api/stories/[id]/publish`. Requires `RESEND_API_KEY` and `NOTIFICATION_EMAIL` env vars.
-- **Stable Diffusion migration** — Replace DALL·E 3 with Stable Diffusion (SDXL/SD3/Flux) via Replicate or fal.ai API for ~5-10x cost savings ($0.005-0.01 vs $0.04-0.08 per image). Quality is comparable for storybook-style art. Could also fine-tune a LoRA for consistent illustration style across stories.
-- Text-to-speech (read-aloud mode)
+- **Email notifications on story submission** — Send an email to the admin when a story is submitted. Use Resend (free tier: 100 emails/day) with a `lib/email.ts` helper. Requires `RESEND_API_KEY` and `NOTIFICATION_EMAIL` env vars.
+- **Stable Diffusion migration** — Replace DALL·E 3 with Stable Diffusion (SDXL/SD3/Flux) via Replicate or fal.ai API for ~5-10x cost savings ($0.005-0.01 vs $0.04-0.08 per image).
+- **Read-aloud mode** — Text-to-speech using Web Speech API or ElevenLabs
 - Multiple user profiles (siblings)
 - Reading progress tracking / bookmarks
 - Story rating / favorites
 - Offline support (PWA)
-- Print-to-PDF for physical storybooks
 - Multi-language story generation
 - Abuse reporting system
 - OpenAI spending caps / billing alerts
