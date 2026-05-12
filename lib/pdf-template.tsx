@@ -109,11 +109,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '58%',
     overflow: 'hidden',
+    backgroundColor: '#F5F0E8',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   storyImage: {
-    width: '100%',
     height: '100%',
     objectFit: 'cover',
+    objectPosition: 'center',
   },
   storyTextContainer: {
     flex: 1,
