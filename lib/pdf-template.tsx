@@ -239,14 +239,17 @@ export function StoryPDF({
   categoryName,
   pages,
 }: StoryPDFProps) {
+  // Filter out pages with no text (prevents blank pages)
+  const validPages = pages.filter(p => p.text && p.text.trim().length > 0);
+
   return (
     <Document
       title={title}
       author={author_name || 'Story Sparks'}
       subject={description || `A Story Sparks storybook`}
-      creator="Story Sparks — storysparks.fun"
+      creator="Story Sparks - storysparks.fun"
     >
-      {/* ── Cover page ── */}
+      {/* ── Cover page (combines cover image + metadata + first page text) ── */}
       <Page size="LETTER" orientation="landscape" style={styles.coverPage}>
         {cover_image && (
           <View style={styles.coverImageContainer}>
@@ -254,16 +257,10 @@ export function StoryPDF({
           </View>
         )}
         <Text style={styles.coverTitle}>{title}</Text>
-        {description && (
-          <Text style={styles.coverDescription}>{description}</Text>
-        )}
         {author_name && (
-          <>
-            <View style={styles.coverDivider} />
-            <Text style={styles.coverAuthor}>
-              {getAuthorLabel(author_credit)} {author_name}
-            </Text>
-          </>
+          <Text style={styles.coverAuthor}>
+            {getAuthorLabel(author_credit)} {author_name}
+          </Text>
         )}
         <View style={styles.coverMeta}>
           {categoryName && (
@@ -272,13 +269,13 @@ export function StoryPDF({
           {age_range && (
             <Text style={styles.coverBadge}>Ages {age_range}</Text>
           )}
-          <Text style={styles.coverBadge}>{pages.length} pages</Text>
+          <Text style={styles.coverBadge}>{validPages.length} pages</Text>
         </View>
         <Footer />
       </Page>
 
       {/* ── Story pages ── */}
-      {pages.map((p, i) => {
+      {validPages.map((p, i) => {
         const sentenceCount = (p.text.match(/[.!?](\s|$)/g) || []).length;
         const fontSize = sentenceCount >= 4 ? 16 : sentenceCount >= 3 ? 18 : 22;
         const lineHeight = sentenceCount >= 4 ? 1.6 : 1.7;
@@ -301,18 +298,17 @@ export function StoryPDF({
 
       {/* ── End page ── */}
       <Page size="LETTER" orientation="landscape" style={styles.endPage}>
-        <Text style={styles.endEmoji}>✨</Text>
         <Text style={styles.endTitle}>The End</Text>
+        <View style={styles.endDivider} />
         <Text style={styles.endStoryTitle}>{title}</Text>
         {author_name && (
           <Text style={styles.endAuthor}>
             {getAuthorLabel(author_credit)} {author_name}
           </Text>
         )}
-        <View style={styles.endDivider} />
         <Text style={styles.endBranding}>
           Made with love on Story Sparks{'\n'}
-          Every kid has a spark — we turn it into a story
+          storysparks.fun
         </Text>
         <Footer />
       </Page>
