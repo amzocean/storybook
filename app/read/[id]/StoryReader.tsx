@@ -382,7 +382,7 @@ export default function StoryReader({ story }: { story: StoryData }) {
             </div>
 
             {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap">
               <button
                 onClick={() => router.push('/admin/create')}
                 className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all"
@@ -395,6 +395,13 @@ export default function StoryReader({ story }: { story: StoryData }) {
               >
                 {copied ? '✅ Copied!' : '📤 Share This Story'}
               </button>
+              <a
+                href={`/api/stories/${story.id}/pdf`}
+                download
+                className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white font-bold rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all text-center"
+              >
+                📄 Download PDF
+              </a>
               <button
                 onClick={() => router.push('/')}
                 className="w-full sm:w-auto px-6 py-2.5 bg-white text-amber-700 font-bold rounded-full shadow-lg border-2 border-amber-200 hover:scale-105 active:scale-95 transition-all"
@@ -408,4 +415,5 @@ export default function StoryReader({ story }: { story: StoryData }) {
     </div>
   );
 }
+
 
