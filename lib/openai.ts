@@ -112,6 +112,7 @@ export async function generateStoryOutline(premise: string, category: string, pa
         Detail: Each page must have ${detail.sentences}. This is the most important formatting rule.
         
         Return a JSON object with:
+        - "description": a warm, engaging 1-sentence description of the story suitable for sharing (e.g., "Zahra and Amir, curious 6-year-old twins, discover a magical dinosaur world hidden in their backyard jungle."). Use the character's name, age, and the story's emotional hook. Make it feel like a book jacket blurb.
         - "characterSheet": an object describing the main character's visual appearance for consistent illustrations:
           - "name": the character's name (extract from title/premise, or create one)
           - "appearance": a detailed, fixed visual description of the character (e.g., "a 6-year-old boy with short curly brown hair, brown eyes, light brown skin, wearing a red t-shirt with a star on it and blue jeans"). Do NOT include character names — describe only their physical look.

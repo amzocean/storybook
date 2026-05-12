@@ -48,6 +48,7 @@ export default function CreateStoryPage() {
   const [generatingImages, setGeneratingImages] = useState(false);
   const [imageProgress, setImageProgress] = useState(0);
   const [characterSheet, setCharacterSheet] = useState<{ name: string; appearance: string; style: string } | null>(null);
+  const [generatedDescription, setGeneratedDescription] = useState<string>('');
 
   // Step 4: Publish
   const [coverImage, setCoverImage] = useState('');
@@ -84,6 +85,7 @@ export default function CreateStoryPage() {
       if (data.error) throw new Error(data.error);
       setPages(data.outline);
       if (data.characterSheet) setCharacterSheet(data.characterSheet);
+      if (data.description) setGeneratedDescription(data.description);
       // Store original AI texts for co-author tracking
       const originals: Record<number, string> = {};
       data.outline.forEach((p: PageDraft, i: number) => { originals[i] = p.text; });
@@ -326,7 +328,7 @@ export default function CreateStoryPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: storyId, title, description: premise, category: selectedCategories.join(','),
+          id: storyId, title, description: generatedDescription || premise, category: selectedCategories.join(','),
           tags: selectedCategories, cover_image: coverImage, status: 'published',
           detail_level: detailLevel,
           author_name: authorName || null,

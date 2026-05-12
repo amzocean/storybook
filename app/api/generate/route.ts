@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
         const result = await generateStoryOutline(premise, category, pageCount || 6, title || '', detailLevel || 3);
         const outline = result.pages || result;
         const characterSheet = result.characterSheet || null;
+        const description = result.description || null;
 
         // Safety check 3: verify generated story is kid-appropriate
         const storyText = (outline as any[]).map((p: any) => p.text).join('\n');
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: `🚫 Generated story wasn't kid-friendly (${outputCheck.reason}). Try a different premise!` }, { status: 400 });
         }
 
-        return NextResponse.json({ outline, characterSheet });
+        return NextResponse.json({ outline, characterSheet, description });
       }
 
       case 'regenerate-page': {
