@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://storysparks.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://storysparks.fun';
 
   // Fetch all published stories
   const { data: stories } = await supabase

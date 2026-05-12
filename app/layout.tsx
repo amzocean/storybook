@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   authors: [{ name: "Story Sparks" }],
   creator: "Story Sparks",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://storysparks.app"
+    process.env.NEXT_PUBLIC_SITE_URL || "https://storysparks.fun"
   ),
   viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
   icons: {
@@ -84,14 +84,14 @@ export default function RootLayout({
               "@type": "WebSite",
               name: "Story Sparks",
               url:
-                process.env.NEXT_PUBLIC_SITE_URL || "https://storysparks.app",
+                process.env.NEXT_PUBLIC_SITE_URL || "https://storysparks.fun",
               description:
                 "Create and read free illustrated children's stories for ages 2-12.",
               potentialAction: {
                 "@type": "SearchAction",
                 target: {
                   "@type": "EntryPoint",
-                  urlTemplate: `${process.env.NEXT_PUBLIC_SITE_URL || "https://storysparks.app"}/?search={search_term_string}`,
+                  urlTemplate: `${process.env.NEXT_PUBLIC_SITE_URL || "https://storysparks.fun"}/?search={search_term_string}`,
                 },
                 "query-input": "required name=search_term_string",
               },
