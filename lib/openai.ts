@@ -114,12 +114,12 @@ export async function generateStoryOutline(premise: string, category: string, pa
         Return a JSON object with:
         - "characterSheet": an object describing the main character's visual appearance for consistent illustrations:
           - "name": the character's name (extract from title/premise, or create one)
-          - "appearance": a detailed, fixed visual description (e.g., "a 7-year-old boy with short curly brown hair, brown eyes, light brown skin, wearing a red t-shirt with a star on it and blue jeans") 
+          - "appearance": a detailed, fixed visual description of the character (e.g., "a 6-year-old boy with short curly brown hair, brown eyes, light brown skin, wearing a red t-shirt with a star on it and blue jeans"). Do NOT include character names — describe only their physical look.
           - "style": the art style to use (e.g., "Pixar-style 3D cartoon" or "bright watercolor storybook illustration")
         - "pages": an array of exactly ${pageCount} objects, each having:
           - "pageNumber": number (1-based)
           - "text": the story text for that page (${detail.sentences} — NOT fewer). Use the character's REAL name, never a substitute.
-          - "imageDescription": a vivid description of what the illustration should show. ALWAYS include the character's full appearance description (from characterSheet) so every illustration looks the same. Describe pose, setting, and action but keep the character's look identical.
+          - "imageDescription": a vivid description of what the illustration should show for an artist. NEVER use character names — refer to them as "the boy", "the girl", "the child", "the children", etc. ALWAYS include the character's full appearance description (from characterSheet) so every illustration looks the same. Describe pose, setting, and action but keep the character's look identical.
         
         Make it fun, colorful, and with a positive message at the end!
         Return ONLY valid JSON, no markdown fencing.`
@@ -168,25 +168,22 @@ export async function regeneratePageText(currentText: string, instruction: strin
 export async function generateImage(prompt: string, characterSheet?: { name: string; appearance: string; style: string }): Promise<string> {
   let fullPrompt: string;
   if (characterSheet) {
-    // Sanitize for DALL-E safety: remove real names, specific ages, and frame as fictional
+    // Sanitize for DALL-E safety: remove real names but keep age/appearance details
     const names = characterSheet.name.split(/\s+and\s+|\s*,\s*/).map(n => n.trim()).filter(Boolean);
     const namePattern = names.length > 0 ? new RegExp(`\\b(${names.join('|')})\\b`, 'gi') : null;
-    const sanitize = (text: string) => {
-      let s = text
-        .replace(/\b\d{1,2}[\s-]?year[\s-]?old\b/gi, 'young')
-        .replace(/\bage\s*\d{1,2}\b/gi, 'young');
-      if (namePattern) s = s.replace(namePattern, 'the character');
-      return s;
+    const stripNames = (text: string) => {
+      if (namePattern) return text.replace(namePattern, 'the character');
+      return text;
     };
-    const sanitizedAppearance = sanitize(characterSheet.appearance);
-    const sanitizedPrompt = sanitize(prompt);
-    fullPrompt = `${characterSheet.style} children's storybook illustration of a fictional cartoon character, colorful, friendly, suitable for ages 5-8.
+    const sanitizedAppearance = stripNames(characterSheet.appearance);
+    const sanitizedPrompt = stripNames(prompt);
+    fullPrompt = `${characterSheet.style} children's storybook illustration, colorful, friendly, suitable for ages 5-8.
 
-FICTIONAL CARTOON CHARACTER (must look EXACTLY like this in every image): ${sanitizedAppearance}
+CHARACTER (must look EXACTLY like this in every image): ${sanitizedAppearance}
 
 SCENE: ${sanitizedPrompt}
 
-IMPORTANT: This is a purely fictional cartoon character. Maintain perfect visual consistency across illustrations.
+IMPORTANT: Maintain perfect visual consistency across illustrations.
 Do NOT include any text or words in the image.`;
   } else {
     fullPrompt = `Children's storybook illustration, colorful, friendly, cartoon style, suitable for ages 5-8: ${prompt}. Do NOT include any text or words in the image.`;
@@ -224,8 +221,9 @@ export async function syncImageDescriptions(
         RULES:
         1. Each description should capture the key scene, characters, poses, setting, and mood.
         2. If a character sheet is provided, include the character's full appearance in EVERY description for visual consistency.
-        3. Keep descriptions concise but visually rich (2-3 sentences).
-        4. Return ONLY valid JSON, no markdown fencing.`
+        3. NEVER use character names in descriptions — refer to them as "the boy", "the girl", "the child", etc. Names trigger safety filters in image generators.
+        4. Keep descriptions concise but visually rich (2-3 sentences).
+        5. Return ONLY valid JSON, no markdown fencing.`
       },
       {
         role: 'user',
