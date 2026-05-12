@@ -79,7 +79,7 @@ export default function HomePage() {
     const searchMatch = !q || 
       s.title.toLowerCase().includes(q) ||
       (s.description || '').toLowerCase().includes(q) ||
-      (s.tags || '').toLowerCase().includes(q) ||
+      (Array.isArray(s.tags) ? s.tags.join(' ') : (s.tags || '')).toLowerCase().includes(q) ||
       (s.author_name || '').toLowerCase().includes(q) ||
       (s.category || '').toLowerCase().includes(q);
     return catMatch && readerMatch && searchMatch;
