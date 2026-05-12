@@ -55,16 +55,22 @@ export async function POST(request: NextRequest) {
       }
 
       case 'generate-image': {
+        const startTime = Date.now();
         const { prompt, storyId, pageNumber, characterSheet } = body;
         const imageUrl = await generateImage(prompt, characterSheet || undefined);
+        console.log(`[generate-image] DALL-E took ${Date.now() - startTime}ms for page ${pageNumber}`);
         const savedPath = await downloadAndSaveImage(imageUrl, storyId, `page-${pageNumber}.png`);
+        console.log(`[generate-image] Total took ${Date.now() - startTime}ms for page ${pageNumber}`);
         return NextResponse.json({ imageUrl: savedPath });
       }
 
       case 'generate-cover': {
+        const startTime = Date.now();
         const { title, description, category, storyId, characterSheet } = body;
         const imageUrl = await generateCoverImage(title, description, category, characterSheet || undefined);
+        console.log(`[generate-cover] DALL-E took ${Date.now() - startTime}ms`);
         const savedPath = await downloadAndSaveImage(imageUrl, storyId, 'cover.png');
+        console.log(`[generate-cover] Total took ${Date.now() - startTime}ms`);
         return NextResponse.json({ imageUrl: savedPath });
       }
 
