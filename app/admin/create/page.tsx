@@ -348,7 +348,7 @@ export default function CreateStoryPage() {
       });
       // Submit for review
       await fetch(`/api/stories/${storyId}/publish`, { method: 'POST' });
-      alert('🎉 Your story has been submitted! It will appear in the library once reviewed.');
+      alert('🎉 Your story has been published and is now live in the library!');
       router.push('/');
     } catch (e: any) {
       setError(e.message || 'Failed to publish');

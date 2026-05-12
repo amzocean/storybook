@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>StoryNook - Story Inventory Report</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f0eb; color: #333; padding: 20px; }
+  h1 { text-align: center; color: #6b4ce6; margin: 20px 0; font-size: 2em; }
+  h2 { color: #6b4ce6; margin: 30px 0 15px; padding-bottom: 8px; border-bottom: 2px solid #e0d6f2; }
+  h3 { color: #444; margin: 20px 0 10px; }
+  .summary { background: white; border-radius: 12px; padding: 20px 30px; margin: 20px auto; max-width: 900px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 15px 0; }
+  .stat-card { background: #f8f4ff; border-radius: 10px; padding: 15px; text-align: center; }
+  .stat-card .number { font-size: 2em; font-weight: bold; color: #6b4ce6; }
+  .stat-card .label { font-size: 0.85em; color: #666; margin-top: 5px; }
+  .category-section { background: white; border-radius: 12px; padding: 20px 30px; margin: 15px auto; max-width: 1200px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9em; }
+  th { background: #6b4ce6; color: white; padding: 10px 12px; text-align: left; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+  tr:hover { background: #f8f4ff; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; font-weight: 600; }
+  .badge-published { background: #d4edda; color: #155724; }
+  .badge-draft { background: #fff3cd; color: #856404; }
+  .tag { display: inline-block; background: #e8e0f7; color: #6b4ce6; padding: 1px 6px; border-radius: 6px; font-size: 0.75em; margin: 1px 2px; }
+  .age-badge { display: inline-block; background: #ffe0b2; color: #e65100; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; font-weight: 600; }
+  .toc { background: white; border-radius: 12px; padding: 20px 30px; margin: 15px auto; max-width: 900px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .toc ul { list-style: none; padding-left: 0; }
+  .toc li { padding: 4px 0; }
+  .toc a { color: #6b4ce6; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc .count { color: #999; font-size: 0.9em; }
+  .generated { text-align: center; color: #999; font-size: 0.8em; margin-top: 30px; }
+</style>
+</head>
+<body>
+<h1>📚 StoryNook — Story Inventory Report</h1>
+
+<div class="summary">
+  <h2 style="border:none;margin-top:0">📊 Summary</h2>
+  <div class="summary-grid">
+    <div class="stat-card"><div class="number">28</div><div class="label">Total Stories</div></div>
+    <div class="stat-card"><div class="number">11</div><div class="label">Categories</div></div>
+    <div class="stat-card"><div class="number">3</div><div class="label">Age Groups</div></div>
+    <div class="stat-card"><div class="number">27</div><div class="label">Published</div></div>
+    <div class="stat-card"><div class="number">1</div><div class="label">Drafts</div></div>
+  </div>
+</div>
+
+<div class="toc">
+  <h2 style="border:none;margin-top:0">📑 Table of Contents</h2>
+  <h3>By Category</h3>
+  <ul>
+    <li><a href="#cat-adventure">adventure</a> <span class="count">(7)</span></li>
+    <li><a href="#cat-adventure-animals-funny">adventure,animals,funny</a> <span class="count">(1)</span></li>
+    <li><a href="#cat-adventure-fantasy-funny">adventure,fantasy,funny</a> <span class="count">(1)</span></li>
+    <li><a href="#cat-animals">animals</a> <span class="count">(1)</span></li>
+    <li><a href="#cat-dinosaurs">dinosaurs</a> <span class="count">(4)</span></li>
+    <li><a href="#cat-fairy-tales">fairy-tales</a> <span class="count">(2)</span></li>
+    <li><a href="#cat-fantasy">fantasy</a> <span class="count">(6)</span></li>
+    <li><a href="#cat-funny">funny</a> <span class="count">(1)</span></li>
+    <li><a href="#cat-learning">learning</a> <span class="count">(1)</span></li>
+    <li><a href="#cat-pirates">pirates</a> <span class="count">(1)</span></li>
+    <li><a href="#cat-space">space</a> <span class="count">(3)</span></li>
+  </ul>
+  <h3>By Age Group</h3>
+  <ul>
+    <li><a href="#age-4-5">4-5</a> <span class="count">(5)</span></li>
+    <li><a href="#age-5-7">5-7</a> <span class="count">(19)</span></li>
+    <li><a href="#age-7-9">7-9</a> <span class="count">(4)</span></li>
+  </ul>
+</div>
+
+<h2>📂 Stories by Category</h2>
+
+<div class="category-section" id="cat-adventure">
+  <h3>adventure (7 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Age</th><th>Author</th><th>Tags</th><th>Status</th><th>Created</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Adeventures of Theater camp.</strong><br><small style="color:#888">Burhanudin and Zahra went to a theater camp in summer. Adventures like one day teacher did not come, then how they played together with their friends and had fun.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Burhanuddin Merchant</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/6/2026</small></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Adventure with Dinosaur</strong><br><small style="color:#888">Mohammed and Insiya 6 yo twins adventure with Dinosaur in a Jungle.</small></td>
+      <td><span class="age-badge">4-5</span></td>
+      <td>Mohammed Merchant</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/11/2026</small></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Burhanuddin turns into a Lego</strong><br><small style="color:#888">Burhanuddin a 7yo boy finds a glowing Lego while playing football with his Dad in the backyard. Burhanuddin goes to pick the glowing Lego up and then he turns into a giant lego....</small></td>
+      <td><span class="age-badge">7-9</span></td>
+      <td>Burhanuddin Lanewala</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/10/2026</small></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Burhanuddin's Flight Adventure</strong><br><small style="color:#888">Burhanuddin and his cousin sister Zahra are 7 year old. They both recently took a flight from Vadodara to Bangalore to spend their summer vacation. Make a fun little story about their flight experience. Highlight the whole flight experience from going to airport to checkin , security , waiting at gate and then the flight experience. Add some funny little incidents in between too</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Husein M</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/6/2026</small></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>Burhanuddins adventure with NinjaGo</strong><br><small style="color:#888">Burhanuddin joins the Ninjas to save the planet</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Burhanuddin Lanewala</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/10/2026</small></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><strong>Family trip</strong><br><small style="color:#888">Burhanuddin goes for a vacation to a lake house and  initially thinks thers a monster nearby turns out to be a big friendly seal</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Burhanuddin and Batul</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/11/2026</small></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><strong>The Peculiar Clock</strong><br><small style="color:#888">There is a clock who does a lot of tick tick. It goes round and round. Clock finds a portion. Then the portion turns it into a peaceful clock. Then everyone likes the clock. So the clock laughed and giggled.  Continue on this adventure of the clock in a fun adventure way.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Zahra Merchant</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/6/2026</small></td>
+    </tr>
+  </table>
+</div>
+<div class="category-section" id="cat-adventure-animals-funny">
+  <h3>adventure,animals,funny (1 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Age</th><th>Author</th><th>Tags</th><th>Status</th><th>Created</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Adventure with DInosaur</strong><br><small style="color:#888">Mohammed and Insiya 6 yo twins adventure with Dinosaur in a Jungle.</small></td>
+      <td><span class="age-badge">4-5</span></td>
+      <td>Mohammed Merchant</td>
+      <td><span class="tag">adventure</span> <span class="tag">animals</span> <span class="tag">funny</span></td>
+      <td><span class="badge badge-draft">draft</span></td>
+      <td><small>5/9/2026</small></td>
+    </tr>
+  </table>
+</div>
+<div class="category-section" id="cat-adventure-fantasy-funny">
+  <h3>adventure,fantasy,funny (1 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Age</th><th>Author</th><th>Tags</th><th>Status</th><th>Created</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Sakina's adventures at DIsneyland</strong><br><small style="color:#888">Sakina celebrates her 11th Birthday at Disneyland with her parents</small></td>
+      <td><span class="age-badge">7-9</span></td>
+      <td>Sakina Hashmi</td>
+      <td><span class="tag">adventure</span> <span class="tag">fantasy</span> <span class="tag">funny</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/9/2026</small></td>
+    </tr>
+  </table>
+</div>
+<div class="category-section" id="cat-animals">
+  <h3>animals (1 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Age</th><th>Author</th><th>Tags</th><th>Status</th><th>Created</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Jacks Aquarium Visit</strong><br><small style="color:#888">Write a story about Jacks school trip to an aquarium. Use this story to make it like an educative session about different types of fishes. </small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td></td>
+      <td><span class="tag">animals</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/6/2026</small></td>
+    </tr>
+  </table>
+</div>
+<div class="category-section" id="cat-dinosaurs">
+  <h3>dinosaurs (4 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Age</th><th>Author</th><th>Tags</th><th>Status</th><th>Created</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Mateo's Dinosaur Best Friend</strong><br><small style="color:#888">Join Mateo on an incredible adventure as he discovers and raises a secret dinosaur friend in his backyard.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Farid Eriksson</td>
+      <td><span class="tag">dinosaurs</span> <span class="tag">friendship</span> <span class="tag">pets</span> <span class="tag">personalized</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>The Dinosaur Egg Hunt</strong><br><small style="color:#888">Join three daring dinosaur siblings as they embark on a jungle adventure to find a legendary golden egg.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Willow Jensen</td>
+      <td><span class="tag">adventure</span> <span class="tag">siblings</span> <span class="tag">mystery</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>The Dinosaur Who Loved to Dance</strong><br><small style="color:#888">Join Benny the brachiosaurus on a delightful journey of finding joy and rhythm in the most unexpected places.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Diego Garcia</td>
+      <td><span class="tag">dancing</span> <span class="tag">passion</span> <span class="tag">being-yourself</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Volcano Valley Rescue</strong><br><small style="color:#888">Join a group of brave dinosaur friends as they race against time to rescue baby dinos from an erupting volcano in this thrilling adventure!</small></td>
+      <td><span class="age-badge">7-9</span></td>
+      <td>Hugo Jensen</td>
+      <td><span class="tag">teamwork</span> <span class="tag">bravery</span> <span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+  </table>
+</div>
+<div class="category-section" id="cat-fairy-tales">
+  <h3>fairy-tales (2 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Age</th><th>Author</th><th>Tags</th><th>Status</th><th>Created</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Brave Heart Bear</strong><br><small style="color:#888">Join Brave Heart Bear as he helps a little boy discover courage one tiny step at a time.</small></td>
+      <td><span class="age-badge">4-5</span></td>
+      <td>Mila Ivanova</td>
+      <td><span class="tag">fears</span> <span class="tag">courage</span> <span class="tag">comfort</span> <span class="tag">teddy-bear</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Kai and the Talking Tree</strong><br><small style="color:#888">Join Kai on a magical adventure with the wise, talking tree that teaches lessons on bravery.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Jasper Fontaine</td>
+      <td><span class="tag">nature</span> <span class="tag">wisdom</span> <span class="tag">courage</span> <span class="tag">personalized</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+  </table>
+</div>
+<div class="category-section" id="cat-fantasy">
+  <h3>fantasy (6 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Age</th><th>Author</th><th>Tags</th><th>Status</th><th>Created</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Aria's Cloud Kingdom</strong><br><small style="color:#888">Join Aria on a magical adventure as she discovers a hidden cloud kingdom above her town.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Carmen Patel</td>
+      <td><span class="tag">fantasy</span> <span class="tag">adventure</span> <span class="tag">discovery</span> <span class="tag">personalized</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Dragon School</strong><br><small style="color:#888">Follow young dragons at Dragon School as they learn to fly, breathe fire, and form lasting friendships.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Chloe Chen</td>
+      <td><span class="tag">dragons</span> <span class="tag">school</span> <span class="tag">friendship</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>My Pet Dragon</strong><br><small style="color:#888">Join a young child on a magical adventure as they discover the joys and challenges of raising a baby dragon in their home.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Yuki Williams</td>
+      <td><span class="tag">dragons</span> <span class="tag">pets</span> <span class="tag">funny</span> <span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Princess's Escape</strong><br><small style="color:#888">A story about a Princess Elsa trapped in a haunted castle.</small></td>
+      <td><span class="age-badge">4-5</span></td>
+      <td>Insiyah Merchant</td>
+      <td><span class="tag">fantasy</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/9/2026</small></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>The Secret Unicorn Forest</strong><br><small style="color:#888">Join Alice and Leo as they discover a hidden unicorn forest and learn the importance of protecting nature.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Nico Harper</td>
+      <td><span class="tag">unicorns</span> <span class="tag">nature</span> <span class="tag">adventure</span> <span class="tag">environment</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><strong>The Unicorn's Rainbow Mane</strong><br><small style="color:#888">Join Luna the unicorn as her mane transforms with every act of kindness she shares.</small></td>
+      <td><span class="age-badge">4-5</span></td>
+      <td>Ravi Gonzalez</td>
+      <td><span class="tag">unicorns</span> <span class="tag">kindness</span> <span class="tag">magic</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+  </table>
+</div>
+<div class="category-section" id="cat-funny">
+  <h3>funny (1 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Age</th><th>Author</th><th>Tags</th><th>Status</th><th>Created</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>The Chicken Who Became Principal</strong><br><small style="color:#888">Join Clara the chicken as she hilariously changes school life with her egg-cellent ideas as the accidental principal!</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Gemma Jensen</td>
+      <td><span class="tag">funny</span> <span class="tag">school</span> <span class="tag">animals</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+  </table>
+</div>
+<div class="category-section" id="cat-learning">
+  <h3>learning (1 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Age</th><th>Author</th><th>Tags</th><th>Status</th><th>Created</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>The LEGO Bridge Challenge</strong><br><small style="color:#888">Join friends Max and Lily as they combine creativity and engineering skills to build a LEGO bridge strong enough for their toy cars.</small></td>
+      <td><span class="age-badge">7-9</span></td>
+      <td>Mila Costa</td>
+      <td><span class="tag">lego</span> <span class="tag">STEM</span> <span class="tag">engineering</span> <span class="tag">teamwork</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+  </table>
+</div>
+<div class="category-section" id="cat-pirates">
+  <h3>pirates (1 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Age</th><th>Author</th><th>Tags</th><th>Status</th><th>Created</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>The Map to Friendship Cove</strong><br><small style="color:#888">Join young pirate Jake as he embarks on an adventure to discover the true treasure of Friendship Cove.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Willow Patel</td>
+      <td><span class="tag">pirates</span> <span class="tag">friendship</span> <span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+  </table>
+</div>
+<div class="category-section" id="cat-space">
+  <h3>space (3 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Age</th><th>Author</th><th>Tags</th><th>Status</th><th>Created</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Astronaut Ava's Space Garden</strong><br><small style="color:#888">Join Astronaut Ava as she cultivates the first flowers in space and learns the value of patience and nurturing.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>James Nakamura</td>
+      <td><span class="tag">STEM</span> <span class="tag">patience</span> <span class="tag">nature</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Stargazing with Grandpa</strong><br><small style="color:#888">Join a child and their grandfather on magical stargazing adventures, where constellations come to life with wonder and imagination.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Leo Williams</td>
+      <td><span class="tag">family</span> <span class="tag">grandparents</span> <span class="tag">imagination</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>The Planet That Changed Colors</strong><br><small style="color:#888">Join Leo, a curious explorer, as he discovers a magical planet that changes colors based on kindness and friendship.</small></td>
+      <td><span class="age-badge">5-7</span></td>
+      <td>Farid Garcia</td>
+      <td><span class="tag">kindness</span> <span class="tag">consequences</span> <span class="tag">fantasy</span></td>
+      <td><span class="badge badge-published">published</span></td>
+      <td><small>5/12/2026</small></td>
+    </tr>
+  </table>
+</div>
+<h2>👶 Stories by Age Group</h2>
+<div class="category-section" id="age-4-5">
+  <h3>Ages 4-5 (5 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Category</th><th>Author</th><th>Tags</th><th>Status</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Adventure with Dinosaur</strong></td>
+      <td>adventure</td>
+      <td>Mohammed Merchant</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Adventure with DInosaur</strong></td>
+      <td>adventure,animals,funny</td>
+      <td>Mohammed Merchant</td>
+      <td><span class="tag">adventure</span> <span class="tag">animals</span> <span class="tag">funny</span></td>
+      <td><span class="badge badge-draft">draft</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Brave Heart Bear</strong></td>
+      <td>fairy-tales</td>
+      <td>Mila Ivanova</td>
+      <td><span class="tag">fears</span> <span class="tag">courage</span> <span class="tag">comfort</span> <span class="tag">teddy-bear</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Princess's Escape</strong></td>
+      <td>fantasy</td>
+      <td>Insiyah Merchant</td>
+      <td><span class="tag">fantasy</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>The Unicorn's Rainbow Mane</strong></td>
+      <td>fantasy</td>
+      <td>Ravi Gonzalez</td>
+      <td><span class="tag">unicorns</span> <span class="tag">kindness</span> <span class="tag">magic</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+  </table>
+</div>
+<div class="category-section" id="age-5-7">
+  <h3>Ages 5-7 (19 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Category</th><th>Author</th><th>Tags</th><th>Status</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Adeventures of Theater camp.</strong></td>
+      <td>adventure</td>
+      <td>Burhanuddin Merchant</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Burhanuddin's Flight Adventure</strong></td>
+      <td>adventure</td>
+      <td>Husein M</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Burhanuddins adventure with NinjaGo</strong></td>
+      <td>adventure</td>
+      <td>Burhanuddin Lanewala</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Family trip</strong></td>
+      <td>adventure</td>
+      <td>Burhanuddin and Batul</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>The Peculiar Clock</strong></td>
+      <td>adventure</td>
+      <td>Zahra Merchant</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><strong>Jacks Aquarium Visit</strong></td>
+      <td>animals</td>
+      <td></td>
+      <td><span class="tag">animals</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><strong>Mateo's Dinosaur Best Friend</strong></td>
+      <td>dinosaurs</td>
+      <td>Farid Eriksson</td>
+      <td><span class="tag">dinosaurs</span> <span class="tag">friendship</span> <span class="tag">pets</span> <span class="tag">personalized</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td><strong>The Dinosaur Egg Hunt</strong></td>
+      <td>dinosaurs</td>
+      <td>Willow Jensen</td>
+      <td><span class="tag">adventure</span> <span class="tag">siblings</span> <span class="tag">mystery</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td><strong>The Dinosaur Who Loved to Dance</strong></td>
+      <td>dinosaurs</td>
+      <td>Diego Garcia</td>
+      <td><span class="tag">dancing</span> <span class="tag">passion</span> <span class="tag">being-yourself</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td><strong>Kai and the Talking Tree</strong></td>
+      <td>fairy-tales</td>
+      <td>Jasper Fontaine</td>
+      <td><span class="tag">nature</span> <span class="tag">wisdom</span> <span class="tag">courage</span> <span class="tag">personalized</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td><strong>Aria's Cloud Kingdom</strong></td>
+      <td>fantasy</td>
+      <td>Carmen Patel</td>
+      <td><span class="tag">fantasy</span> <span class="tag">adventure</span> <span class="tag">discovery</span> <span class="tag">personalized</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td><strong>Dragon School</strong></td>
+      <td>fantasy</td>
+      <td>Chloe Chen</td>
+      <td><span class="tag">dragons</span> <span class="tag">school</span> <span class="tag">friendship</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td><strong>My Pet Dragon</strong></td>
+      <td>fantasy</td>
+      <td>Yuki Williams</td>
+      <td><span class="tag">dragons</span> <span class="tag">pets</span> <span class="tag">funny</span> <span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td><strong>The Secret Unicorn Forest</strong></td>
+      <td>fantasy</td>
+      <td>Nico Harper</td>
+      <td><span class="tag">unicorns</span> <span class="tag">nature</span> <span class="tag">adventure</span> <span class="tag">environment</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td><strong>The Chicken Who Became Principal</strong></td>
+      <td>funny</td>
+      <td>Gemma Jensen</td>
+      <td><span class="tag">funny</span> <span class="tag">school</span> <span class="tag">animals</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td><strong>The Map to Friendship Cove</strong></td>
+      <td>pirates</td>
+      <td>Willow Patel</td>
+      <td><span class="tag">pirates</span> <span class="tag">friendship</span> <span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td><strong>Astronaut Ava's Space Garden</strong></td>
+      <td>space</td>
+      <td>James Nakamura</td>
+      <td><span class="tag">STEM</span> <span class="tag">patience</span> <span class="tag">nature</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td><strong>Stargazing with Grandpa</strong></td>
+      <td>space</td>
+      <td>Leo Williams</td>
+      <td><span class="tag">family</span> <span class="tag">grandparents</span> <span class="tag">imagination</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>19</td>
+      <td><strong>The Planet That Changed Colors</strong></td>
+      <td>space</td>
+      <td>Farid Garcia</td>
+      <td><span class="tag">kindness</span> <span class="tag">consequences</span> <span class="tag">fantasy</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+  </table>
+</div>
+<div class="category-section" id="age-7-9">
+  <h3>Ages 7-9 (4 stories)</h3>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Category</th><th>Author</th><th>Tags</th><th>Status</th></tr>
+    <tr>
+      <td>1</td>
+      <td><strong>Burhanuddin turns into a Lego</strong></td>
+      <td>adventure</td>
+      <td>Burhanuddin Lanewala</td>
+      <td><span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Sakina's adventures at DIsneyland</strong></td>
+      <td>adventure,fantasy,funny</td>
+      <td>Sakina Hashmi</td>
+      <td><span class="tag">adventure</span> <span class="tag">fantasy</span> <span class="tag">funny</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Volcano Valley Rescue</strong></td>
+      <td>dinosaurs</td>
+      <td>Hugo Jensen</td>
+      <td><span class="tag">teamwork</span> <span class="tag">bravery</span> <span class="tag">adventure</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>The LEGO Bridge Challenge</strong></td>
+      <td>learning</td>
+      <td>Mila Costa</td>
+      <td><span class="tag">lego</span> <span class="tag">STEM</span> <span class="tag">engineering</span> <span class="tag">teamwork</span></td>
+      <td><span class="badge badge-published">published</span></td>
+    </tr>
+  </table>
+</div>
+<p class="generated">Generated on 5/12/2026, 1:31:54 PM — StoryNook Inventory</p>
+</body></html>
