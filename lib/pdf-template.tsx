@@ -215,6 +215,8 @@ interface StoryPDFProps {
   categoryName?: string;
   categoryEmoji?: string;
   pages: PageData[];
+  pageSize?: string;
+  printerSafe?: boolean;
 }
 
 function getAuthorLabel(credit?: string): string {
@@ -238,9 +240,13 @@ export function StoryPDF({
   age_range,
   categoryName,
   pages,
+  pageSize = 'LETTER',
+  printerSafe = false,
 }: StoryPDFProps) {
   // Filter out pages with no text (prevents blank pages)
   const validPages = pages.filter(p => p.text && p.text.trim().length > 0);
+  const bg = printerSafe ? WHITE : CREAM;
+  const size = pageSize as 'LETTER' | 'A4';
 
   return (
     <Document
@@ -250,7 +256,7 @@ export function StoryPDF({
       creator="Story Sparks - storysparks.fun"
     >
       {/* ── Cover page (combines cover image + metadata + first page text) ── */}
-      <Page size="LETTER" orientation="landscape" style={styles.coverPage}>
+      <Page size={size} orientation="landscape" style={{ ...styles.coverPage, backgroundColor: bg }}>
         {cover_image && (
           <View style={styles.coverImageContainer}>
             <Image src={cover_image} style={styles.coverImage} />
@@ -281,7 +287,7 @@ export function StoryPDF({
         const lineHeight = sentenceCount >= 4 ? 1.6 : 1.7;
 
         return (
-          <Page key={i} size="LETTER" orientation="landscape" style={styles.storyPage}>
+          <Page key={i} size={size} orientation="landscape" style={{ ...styles.storyPage, backgroundColor: bg }}>
             {p.image_path && (
               <View style={styles.storyImageContainer}>
                 <Image src={p.image_path} style={styles.storyImage} />
@@ -297,7 +303,7 @@ export function StoryPDF({
       })}
 
       {/* ── End page ── */}
-      <Page size="LETTER" orientation="landscape" style={styles.endPage}>
+      <Page size={size} orientation="landscape" style={{ ...styles.endPage, backgroundColor: bg }}>
         <Text style={styles.endTitle}>The End</Text>
         <View style={styles.endDivider} />
         <Text style={styles.endStoryTitle}>{title}</Text>
@@ -316,3 +322,152 @@ export function StoryPDF({
   );
 }
 
+// ─── Coloring Book PDF ──────────────────────────────────────────────────────
+// Each page has the story text + a large empty bordered frame for kids to draw in
+
+interface ColoringPDFProps {
+  title: string;
+  author_name?: string;
+  author_credit?: string;
+  pages: PageData[];
+  pageSize?: string;
+}
+
+const coloringStyles = StyleSheet.create({
+  page: {
+    backgroundColor: WHITE,
+    flexDirection: 'column',
+    padding: 40,
+    position: 'relative',
+  },
+  coverTitle: {
+    fontFamily: FONT_SERIF_BOLD,
+    fontSize: 36,
+    color: '#1F2937',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  coverSubtitle: {
+    fontFamily: FONT_SANS,
+    fontSize: 16,
+    color: GRAY,
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  coverAuthor: {
+    fontFamily: FONT_SANS_BOLD,
+    fontSize: 14,
+    color: GRAY,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  drawFrame: {
+    flex: 1,
+    border: '2px dashed #D1D5DB',
+    borderRadius: 12,
+    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  drawHint: {
+    fontFamily: FONT_SANS_OBLIQUE,
+    fontSize: 14,
+    color: '#D1D5DB',
+  },
+  storyText: {
+    fontFamily: FONT_SANS,
+    fontSize: 16,
+    color: '#374151',
+    textAlign: 'center',
+    lineHeight: 1.6,
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  pageNumber: {
+    fontFamily: FONT_SANS,
+    fontSize: 10,
+    color: '#9CA3AF',
+    position: 'absolute',
+    bottom: 20,
+    right: 40,
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 18,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  footerText: {
+    fontFamily: FONT_SANS,
+    fontSize: 8,
+    color: '#9CA3AF',
+    letterSpacing: 1,
+  },
+});
+
+export function ColoringPDF({
+  title,
+  author_name,
+  author_credit,
+  pages,
+  pageSize = 'LETTER',
+}: ColoringPDFProps) {
+  const validPages = pages.filter(p => p.text && p.text.trim().length > 0);
+  const size = pageSize as 'LETTER' | 'A4';
+
+  return (
+    <Document
+      title={`${title} - Coloring Pages`}
+      author={author_name || 'Story Sparks'}
+      creator="Story Sparks - storysparks.fun"
+    >
+      {/* Cover */}
+      <Page size={size} orientation="landscape" style={coloringStyles.page}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={coloringStyles.coverTitle}>{title}</Text>
+          <Text style={coloringStyles.coverSubtitle}>Coloring and Drawing Pages</Text>
+          {author_name && (
+            <Text style={coloringStyles.coverAuthor}>
+              {getAuthorLabel(author_credit)} {author_name}
+            </Text>
+          )}
+          <View style={{ width: 60, height: 2, backgroundColor: '#D1D5DB', marginVertical: 20, borderRadius: 1 }} />
+          <Text style={{ fontFamily: FONT_SANS_OBLIQUE, fontSize: 13, color: GRAY, textAlign: 'center' }}>
+            Read the story, then draw your own pictures!
+          </Text>
+        </View>
+        <View style={coloringStyles.footer}>
+          <Text style={coloringStyles.footerText}>Created with StorySparks.fun</Text>
+        </View>
+      </Page>
+
+      {/* Story pages with drawing frames */}
+      {validPages.map((p, i) => (
+        <Page key={i} size={size} orientation="landscape" style={coloringStyles.page}>
+          <View style={coloringStyles.drawFrame}>
+            <Text style={coloringStyles.drawHint}>Draw your picture here!</Text>
+          </View>
+          <Text style={coloringStyles.storyText}>{p.text}</Text>
+          <Text style={coloringStyles.pageNumber}>{i + 1}</Text>
+          <View style={coloringStyles.footer}>
+            <Text style={coloringStyles.footerText}>Created with StorySparks.fun</Text>
+          </View>
+        </Page>
+      ))}
+
+      {/* End page */}
+      <Page size={size} orientation="landscape" style={coloringStyles.page}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontFamily: FONT_SERIF_BOLD, fontSize: 36, color: '#1F2937', marginBottom: 16 }}>The End</Text>
+          <Text style={{ fontFamily: FONT_SANS, fontSize: 14, color: GRAY, textAlign: 'center' }}>
+            Great job! You made your own illustrated storybook!
+          </Text>
+        </View>
+        <View style={coloringStyles.footer}>
+          <Text style={coloringStyles.footerText}>Created with StorySparks.fun</Text>
+        </View>
+      </Page>
+    </Document>
+  );
+}

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { renderToBuffer } from '@react-pdf/renderer';
 import React from 'react';
-import { StoryPDF } from '@/lib/pdf-template';
+import { StoryPDF, ColoringPDF } from '@/lib/pdf-template';
 
 export const maxDuration = 300;
 export const runtime = 'nodejs';
@@ -12,6 +12,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const searchParams = request.nextUrl.searchParams;
+  const mode = searchParams.get('mode') || 'default'; // default | print | coloring
+  const size = searchParams.get('size') || 'letter'; // letter | a4
 
   // Fetch story
   const { data: story, error } = await supabase
@@ -48,19 +51,41 @@ export async function GET(
 
   // Render PDF
   try {
-    const buffer = await renderToBuffer(
-      React.createElement(StoryPDF, {
-        title: story.title,
-        description: story.description,
-        cover_image: story.cover_image,
-        author_name: story.author_name,
-        author_credit: story.author_credit,
-        age_range: story.age_range,
-        categoryName,
-        categoryEmoji,
-        pages: pages || [],
-      })
-    );
+    const pageSize = size.toLowerCase() === 'a4' ? 'A4' : 'LETTER';
+    const printerSafe = mode === 'print' || mode === 'coloring';
+
+    let buffer: Buffer;
+    let filenameSuffix: string;
+
+    if (mode === 'coloring') {
+      buffer = await renderToBuffer(
+        React.createElement(ColoringPDF, {
+          title: story.title,
+          author_name: story.author_name,
+          author_credit: story.author_credit,
+          pages: pages || [],
+          pageSize,
+        })
+      );
+      filenameSuffix = 'coloring-pages';
+    } else {
+      buffer = await renderToBuffer(
+        React.createElement(StoryPDF, {
+          title: story.title,
+          description: story.description,
+          cover_image: story.cover_image,
+          author_name: story.author_name,
+          author_credit: story.author_credit,
+          age_range: story.age_range,
+          categoryName,
+          categoryEmoji,
+          pages: pages || [],
+          pageSize,
+          printerSafe,
+        })
+      );
+      filenameSuffix = 'storysparks';
+    }
 
     // Sanitize title for filename
     const safeTitle = story.title
@@ -68,7 +93,7 @@ export async function GET(
       .replace(/\s+/g, '-')
       .substring(0, 60)
       .toLowerCase();
-    const filename = `${safeTitle}-storysparks.pdf`;
+    const filename = `${safeTitle}-${filenameSuffix}.pdf`;
 
     return new NextResponse(new Uint8Array(buffer), {
       status: 200,

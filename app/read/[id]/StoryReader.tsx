@@ -328,6 +328,13 @@ export default function StoryReader({ story }: { story: StoryData }) {
               >
                 🖨️ Download Printable Storybook
               </a>
+              <a
+                href={`/api/stories/${story.id}/pdf?mode=coloring`}
+                download
+                className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-green-400 to-emerald-500 text-white font-bold rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all text-center"
+              >
+                🎨 Download Coloring Pages
+              </a>
               <button
                 onClick={() => router.push('/')}
                 className="w-full sm:w-auto px-6 py-2.5 bg-white text-amber-700 font-bold rounded-full shadow-lg border-2 border-amber-200 hover:scale-105 active:scale-95 transition-all"
