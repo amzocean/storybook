@@ -51,7 +51,8 @@ export default function StoryReader({ story }: { story: StoryData }) {
 
   const totalPages = story.pages.length;
   const isOnCover = currentPage === -1;
-  const isLastPage = currentPage === totalPages - 1;
+  const isOnEnd = currentPage === totalPages; // end page after last story page
+  const isLastPage = currentPage === totalPages; // end is the true last page
   const isFirstPage = currentPage === -1;
 
   const handleShare = async () => {
@@ -75,7 +76,7 @@ export default function StoryReader({ story }: { story: StoryData }) {
   };
 
   const goNext = useCallback(() => {
-    if (currentPage < totalPages - 1) {
+    if (currentPage < totalPages) {
       setCurrentPage(p => p + 1);
     }
   }, [currentPage, totalPages]);
@@ -114,7 +115,7 @@ export default function StoryReader({ story }: { story: StoryData }) {
     touchRef.current = null;
   }, [goNext, goPrev]);
 
-  const progress = ((currentPage + 2) / (totalPages + 1)) * 100; // +1 for cover page offset
+  const progress = ((currentPage + 2) / (totalPages + 2)) * 100; // cover(-1) + pages(0..N-1) + end(N)
 
   // Cover page view
   if (isOnCover) {
@@ -222,129 +223,53 @@ export default function StoryReader({ story }: { story: StoryData }) {
     );
   }
 
-  // Regular page view
-  const page = story.pages[currentPage];
+  // End page view (separate full-screen page like cover)
+  if (isOnEnd) {
+    return (
+      <div
+        className="min-h-[100dvh] bg-gradient-to-b from-amber-50 via-orange-50 to-yellow-50 flex flex-col select-none"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Progress bar */}
+        <div className="h-2 bg-amber-100 flex-shrink-0 rounded-full mx-2 mt-2">
+          <div
+            className="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500 rounded-full"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
 
-  return (
-    <div
-      className="min-h-[100dvh] bg-gradient-to-b from-amber-50 via-orange-50 to-yellow-50 flex flex-col select-none"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      {/* Progress bar */}
-      <div className="h-2 bg-amber-100 flex-shrink-0 rounded-full mx-2 mt-2">
-        <div
-          className="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500 rounded-full"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-4 sm:px-6 py-2 sm:py-3 flex-shrink-0">
-        <button
-          onClick={() => setCurrentPage(-1)}
-          className="px-3 py-1.5 bg-white/80 hover:bg-white text-gray-700 rounded-full text-sm font-bold shadow-md transition-all hover:scale-105 active:scale-95"
-        >
-          📖 Cover
-        </button>
-        <h2 className="text-gray-700 font-extrabold text-xs sm:text-sm truncate max-w-[40%] text-center">{story.title}</h2>
-        <div className="flex items-center gap-2">
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-4 sm:px-6 py-2 sm:py-3 flex-shrink-0">
+          <button
+            onClick={() => setCurrentPage(-1)}
+            className="px-3 py-1.5 bg-white/80 hover:bg-white text-gray-700 rounded-full text-sm font-bold shadow-md transition-all hover:scale-105 active:scale-95"
+          >
+            📖 Cover
+          </button>
+          <h2 className="text-gray-700 font-extrabold text-xs sm:text-sm truncate max-w-[40%] text-center">{story.title}</h2>
           <button
             onClick={handleShare}
             className="px-3 py-1.5 bg-white/80 hover:bg-white text-gray-700 rounded-full text-sm font-bold shadow-md transition-all hover:scale-105 active:scale-95"
           >
             {copied ? '✅ Copied!' : '📤 Share'}
           </button>
-          <span className="px-3 py-1.5 bg-white/80 text-gray-600 rounded-full text-xs sm:text-sm font-bold shadow-md">
-            📄 {currentPage + 1}/{totalPages}
-          </span>
         </div>
-      </div>
 
-      {/* Page Content */}
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
-        {/* Left nav (desktop) */}
-        <button
-          onClick={goPrev}
-          className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 w-14 h-14 bg-white shadow-lg rounded-full items-center justify-center text-2xl hover:scale-110 active:scale-95 transition-all"
-        >
-          ⬅️
-        </button>
-
-        {/* Right nav (desktop) */}
-        <button
-          onClick={goNext}
-          className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-10 w-14 h-14 bg-white shadow-lg rounded-full items-center justify-center text-2xl hover:scale-110 active:scale-95 transition-all disabled:opacity-20"
-          disabled={isLastPage}
-        >
-          ➡️
-        </button>
-
-        {/* The page itself */}
-        <div className="max-w-2xl w-full">
-          {page?.image_path && (
-            <div className="relative aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden mb-4 sm:mb-6 shadow-xl border-4 border-white">
-              <img
-                src={page.image_path}
-                alt={`Page ${currentPage + 1}`}
-                className="w-full h-full object-cover"
-                draggable={false}
-              />
-            </div>
-          )}
-          <div className="bg-white/80 rounded-2xl px-5 sm:px-8 py-4 sm:py-6 shadow-lg border-2 border-amber-200/50">
-            <p className="text-gray-800 text-lg sm:text-xl md:text-2xl lg:text-3xl text-center leading-relaxed sm:leading-relaxed font-semibold">
-              {page?.text}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile nav buttons */}
-      <div className="flex sm:hidden items-center justify-between px-6 py-3 flex-shrink-0">
-        <button
-          onClick={goPrev}
-          className="px-5 py-2.5 bg-white rounded-full text-gray-700 font-bold text-sm active:scale-95 shadow-lg transition-all"
-        >
-          ⬅️ Back
-        </button>
-        <button
-          onClick={goNext}
-          disabled={isLastPage}
-          className="px-5 py-2.5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full text-white font-bold text-sm disabled:opacity-30 active:scale-95 shadow-lg transition-all"
-        >
-          Next ➡️
-        </button>
-      </div>
-
-      {/* Page dots (cover + pages) */}
-      <div className="flex justify-center gap-1.5 sm:gap-2 pb-4 sm:pb-6 flex-shrink-0 flex-wrap px-4">
-        {/* Cover dot */}
-        <button
-          onClick={() => setCurrentPage(-1)}
-          className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full transition-all shadow-sm bg-amber-200 hover:bg-amber-300"
-          title="Cover"
-        />
-        {story.pages.map((_, i) => (
+        {/* End page content */}
+        <div className="flex-1 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+          {/* Left nav (desktop) */}
           <button
-            key={i}
-            onClick={() => setCurrentPage(i)}
-            className={`w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full transition-all shadow-sm ${
-              i === currentPage
-                ? 'bg-gradient-to-r from-green-400 to-emerald-500 scale-125 ring-2 ring-green-200'
-                : 'bg-amber-200 hover:bg-amber-300'
-            }`}
-          />
-        ))}
-      </div>
+            onClick={goPrev}
+            className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 w-14 h-14 bg-white shadow-lg rounded-full items-center justify-center text-2xl hover:scale-110 active:scale-95 transition-all"
+          >
+            ⬅️
+          </button>
 
-      {/* End of story — card matching cover style */}
-      {isLastPage && (
-        <div className="flex justify-center pb-6 px-4">
           <div className="max-w-lg w-full text-center">
-            {/* Cover image callback */}
+            {/* Cover image */}
             {story.cover_image && (
-              <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden mx-auto mb-4 shadow-xl border-4 border-white">
+              <div className="relative w-40 h-40 sm:w-52 sm:h-52 rounded-2xl overflow-hidden mx-auto mb-5 shadow-xl border-4 border-white">
                 <img
                   src={story.cover_image}
                   alt={story.title}
@@ -411,7 +336,160 @@ export default function StoryReader({ story }: { story: StoryData }) {
             </div>
           </div>
         </div>
-      )}
+
+        {/* Mobile nav */}
+        <div className="flex sm:hidden items-center justify-center px-6 py-3 flex-shrink-0">
+          <button
+            onClick={goPrev}
+            className="px-5 py-2.5 bg-white rounded-full text-gray-700 font-bold text-sm active:scale-95 shadow-lg transition-all"
+          >
+            ⬅️ Back
+          </button>
+        </div>
+
+        {/* Page dots */}
+        <div className="flex justify-center gap-1.5 sm:gap-2 pb-4 sm:pb-6 flex-shrink-0 flex-wrap px-4">
+          <button
+            onClick={() => setCurrentPage(-1)}
+            className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full transition-all shadow-sm bg-amber-200 hover:bg-amber-300"
+            title="Cover"
+          />
+          {story.pages.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i)}
+              className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full transition-all shadow-sm bg-amber-200 hover:bg-amber-300"
+            />
+          ))}
+          <button
+            onClick={() => setCurrentPage(totalPages)}
+            className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full transition-all shadow-sm bg-gradient-to-r from-green-400 to-emerald-500 scale-125 ring-2 ring-green-200"
+            title="The End"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Regular page view
+  const page = story.pages[currentPage];
+
+  return (
+    <div
+      className="min-h-[100dvh] bg-gradient-to-b from-amber-50 via-orange-50 to-yellow-50 flex flex-col select-none"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Progress bar */}
+      <div className="h-2 bg-amber-100 flex-shrink-0 rounded-full mx-2 mt-2">
+        <div
+          className="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-500 rounded-full"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-4 sm:px-6 py-2 sm:py-3 flex-shrink-0">
+        <button
+          onClick={() => setCurrentPage(-1)}
+          className="px-3 py-1.5 bg-white/80 hover:bg-white text-gray-700 rounded-full text-sm font-bold shadow-md transition-all hover:scale-105 active:scale-95"
+        >
+          📖 Cover
+        </button>
+        <h2 className="text-gray-700 font-extrabold text-xs sm:text-sm truncate max-w-[40%] text-center">{story.title}</h2>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleShare}
+            className="px-3 py-1.5 bg-white/80 hover:bg-white text-gray-700 rounded-full text-sm font-bold shadow-md transition-all hover:scale-105 active:scale-95"
+          >
+            {copied ? '✅ Copied!' : '📤 Share'}
+          </button>
+          <span className="px-3 py-1.5 bg-white/80 text-gray-600 rounded-full text-xs sm:text-sm font-bold shadow-md">
+            📄 {currentPage + 1}/{totalPages}
+          </span>
+        </div>
+      </div>
+
+      {/* Page Content */}
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+        {/* Left nav (desktop) */}
+        <button
+          onClick={goPrev}
+          className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 w-14 h-14 bg-white shadow-lg rounded-full items-center justify-center text-2xl hover:scale-110 active:scale-95 transition-all"
+        >
+          ⬅️
+        </button>
+
+        {/* Right nav (desktop) */}
+        <button
+          onClick={goNext}
+          className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-10 w-14 h-14 bg-white shadow-lg rounded-full items-center justify-center text-2xl hover:scale-110 active:scale-95 transition-all"
+        >
+          ➡️
+        </button>
+
+        {/* The page itself */}
+        <div className="max-w-2xl w-full">
+          {page?.image_path && (
+            <div className="relative aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden mb-4 sm:mb-6 shadow-xl border-4 border-white">
+              <img
+                src={page.image_path}
+                alt={`Page ${currentPage + 1}`}
+                className="w-full h-full object-cover"
+                draggable={false}
+              />
+            </div>
+          )}
+          <div className="bg-white/80 rounded-2xl px-5 sm:px-8 py-4 sm:py-6 shadow-lg border-2 border-amber-200/50">
+            <p className="text-gray-800 text-lg sm:text-xl md:text-2xl lg:text-3xl text-center leading-relaxed sm:leading-relaxed font-semibold">
+              {page?.text}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile nav buttons */}
+      <div className="flex sm:hidden items-center justify-between px-6 py-3 flex-shrink-0">
+        <button
+          onClick={goPrev}
+          className="px-5 py-2.5 bg-white rounded-full text-gray-700 font-bold text-sm active:scale-95 shadow-lg transition-all"
+        >
+          ⬅️ Back
+        </button>
+        <button
+          onClick={goNext}
+          className="px-5 py-2.5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full text-white font-bold text-sm active:scale-95 shadow-lg transition-all"
+        >
+          Next ➡️
+        </button>
+      </div>
+
+      {/* Page dots (cover + pages + end) */}
+      <div className="flex justify-center gap-1.5 sm:gap-2 pb-4 sm:pb-6 flex-shrink-0 flex-wrap px-4">
+        {/* Cover dot */}
+        <button
+          onClick={() => setCurrentPage(-1)}
+          className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full transition-all shadow-sm bg-amber-200 hover:bg-amber-300"
+          title="Cover"
+        />
+        {story.pages.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentPage(i)}
+            className={`w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full transition-all shadow-sm ${
+              i === currentPage
+                ? 'bg-gradient-to-r from-green-400 to-emerald-500 scale-125 ring-2 ring-green-200'
+                : 'bg-amber-200 hover:bg-amber-300'
+            }`}
+          />
+        ))}
+        {/* End dot */}
+        <button
+          onClick={() => setCurrentPage(totalPages)}
+          className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full transition-all shadow-sm bg-amber-200 hover:bg-amber-300"
+          title="The End"
+        />
+      </div>
     </div>
   );
 }
