@@ -168,13 +168,25 @@ export async function regeneratePageText(currentText: string, instruction: strin
 export async function generateImage(prompt: string, characterSheet?: { name: string; appearance: string; style: string }): Promise<string> {
   let fullPrompt: string;
   if (characterSheet) {
-    fullPrompt = `${characterSheet.style} children's storybook illustration, colorful, friendly, suitable for ages 5-8.
+    // Sanitize for DALL-E safety: remove real names, specific ages, and frame as fictional
+    const names = characterSheet.name.split(/\s+and\s+|\s*,\s*/).map(n => n.trim()).filter(Boolean);
+    const namePattern = names.length > 0 ? new RegExp(`\\b(${names.join('|')})\\b`, 'gi') : null;
+    const sanitize = (text: string) => {
+      let s = text
+        .replace(/\b\d{1,2}[\s-]?year[\s-]?old\b/gi, 'young')
+        .replace(/\bage\s*\d{1,2}\b/gi, 'young');
+      if (namePattern) s = s.replace(namePattern, 'the character');
+      return s;
+    };
+    const sanitizedAppearance = sanitize(characterSheet.appearance);
+    const sanitizedPrompt = sanitize(prompt);
+    fullPrompt = `${characterSheet.style} children's storybook illustration of a fictional cartoon character, colorful, friendly, suitable for ages 5-8.
 
-MAIN CHARACTER (must look EXACTLY like this in every image): ${characterSheet.name} - ${characterSheet.appearance}
+FICTIONAL CARTOON CHARACTER (must look EXACTLY like this in every image): ${sanitizedAppearance}
 
-SCENE: ${prompt}
+SCENE: ${sanitizedPrompt}
 
-IMPORTANT: The character's face, hair, skin tone, and clothing must be exactly as described above. Maintain perfect visual consistency.
+IMPORTANT: This is a purely fictional cartoon character. Maintain perfect visual consistency across illustrations.
 Do NOT include any text or words in the image.`;
   } else {
     fullPrompt = `Children's storybook illustration, colorful, friendly, cartoon style, suitable for ages 5-8: ${prompt}. Do NOT include any text or words in the image.`;
@@ -233,11 +245,22 @@ Return a JSON array: [{"pageNumber": N, "imageDescription": "..."}]`
   return JSON.parse(cleaned);
 }
 
-export async function generateCoverImage(title: string, description: string, category: string): Promise<string> {
+export async function generateCoverImage(title: string, description: string, category: string, characterSheet?: { name: string }): Promise<string> {
+  // Sanitize names from title/description to avoid DALL-E safety rejections
+  let safeTitle = title;
+  let safeDescription = description;
+  if (characterSheet) {
+    const names = characterSheet.name.split(/\s+and\s+|\s*,\s*/).map(n => n.trim()).filter(Boolean);
+    if (names.length > 0) {
+      const namePattern = new RegExp(`\\b(${names.join('|')})\\b`, 'gi');
+      safeTitle = title.replace(namePattern, 'the character');
+      safeDescription = description.replace(namePattern, 'the character');
+    }
+  }
   const response = await openai.images.generate({
     model: 'dall-e-3',
-    prompt: `Children's storybook cover illustration, colorful, eye-catching, cartoon style for ages 5-8. 
-    Title: "${title}". Story about: ${description}. Category: ${category}. 
+    prompt: `Children's storybook cover illustration of fictional cartoon characters, colorful, eye-catching, cartoon style for ages 5-8. 
+    Title: "${safeTitle}". Story about: ${safeDescription}. Category: ${category}. 
     Make it vibrant and appealing to young readers. Do NOT include any text in the image.`,
     n: 1,
     size: '1024x1024',

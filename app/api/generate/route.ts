@@ -62,8 +62,8 @@ export async function POST(request: NextRequest) {
       }
 
       case 'generate-cover': {
-        const { title, description, category, storyId } = body;
-        const imageUrl = await generateCoverImage(title, description, category);
+        const { title, description, category, storyId, characterSheet } = body;
+        const imageUrl = await generateCoverImage(title, description, category, characterSheet || undefined);
         const savedPath = await downloadAndSaveImage(imageUrl, storyId, 'cover.png');
         return NextResponse.json({ imageUrl: savedPath });
       }

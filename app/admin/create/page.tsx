@@ -296,7 +296,7 @@ export default function CreateStoryPage() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'generate-cover', title, description: premise, category: selectedCategories.join(','), storyId }),
+        body: JSON.stringify({ action: 'generate-cover', title, description: premise, category: selectedCategories.join(','), storyId, characterSheet }),
       });
       const data = await res.json();
       if (!res.ok || data.error) {
