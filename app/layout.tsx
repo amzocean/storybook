@@ -14,11 +14,49 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Story Sparks ✨",
-  description: "Every kid has a spark — we turn it into a story!",
+  title: {
+    default: "Story Sparks ✨ — Free Illustrated Stories for Kids",
+    template: "%s — Story Sparks ✨",
+  },
+  description:
+    "Create and read free illustrated children's stories! Bedtime stories, adventure tales, dinosaur stories, fairy tales and more for ages 2-12. Imagined by kids, brought to life with AI illustrations.",
+  keywords: [
+    "children's stories",
+    "kids stories",
+    "bedtime stories",
+    "illustrated stories",
+    "free stories for kids",
+    "story creator",
+    "kids book",
+    "read aloud stories",
+    "dinosaur stories",
+    "fairy tales",
+    "adventure stories for kids",
+    "toddler stories",
+    "early reader books",
+  ],
+  authors: [{ name: "Story Sparks" }],
+  creator: "Story Sparks",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://storysparks.app"
+  ),
   viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
   icons: {
     icon: "/favicon.svg",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Story Sparks ✨",
+    title: "Story Sparks ✨ — Free Illustrated Stories for Kids",
+    description:
+      "Create and read free illustrated children's stories! Bedtime stories, adventure tales, dinosaur stories, fairy tales and more for ages 2-12.",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Story Sparks ✨ — Free Illustrated Stories for Kids",
+    description:
+      "Create and read free illustrated children's stories for ages 2-12!",
   },
   appleWebApp: {
     capable: true,
@@ -37,6 +75,30 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "Story Sparks",
+              url:
+                process.env.NEXT_PUBLIC_SITE_URL || "https://storysparks.app",
+              description:
+                "Create and read free illustrated children's stories for ages 2-12.",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: {
+                  "@type": "EntryPoint",
+                  urlTemplate: `${process.env.NEXT_PUBLIC_SITE_URL || "https://storysparks.app"}/?search={search_term_string}`,
+                },
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         {children}
         <Analytics />
