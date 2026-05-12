@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import QRCode from 'react-qr-code';
 
 interface PageData {
   id: string;
@@ -333,6 +334,18 @@ export default function StoryReader({ story }: { story: StoryData }) {
               >
                 📚 Read More Stories
               </button>
+            </div>
+
+            {/* QR code for sharing */}
+            <div className="mt-6 flex flex-col items-center gap-2">
+              <div className="bg-white p-3 rounded-xl shadow-md">
+                <QRCode
+                  value={`https://storysparks.fun/read/${story.id}`}
+                  size={96}
+                  level="M"
+                />
+              </div>
+              <p className="text-xs text-amber-600 font-medium">Scan to share this story</p>
             </div>
           </div>
         </div>
