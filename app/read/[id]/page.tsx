@@ -30,12 +30,18 @@ export default function ReadStory() {
   const handleShare = async () => {
     const url = window.location.href;
     const title = story?.title || 'Story Sparks';
+    const authorLine = story?.author_name
+      ? story.author_credit === 'authored' ? `, written by ${story.author_name}`
+      : story.author_credit === 'coauthored' ? `, co-authored by ${story.author_name}`
+      : `, imagined by ${story.author_name}`
+      : '';
+    const text = `Read "${title}"${authorLine} on Story Sparks! ✨`;
     if (navigator.share) {
       try {
-        await navigator.share({ title, text: `Read "${title}" on Story Sparks! ✨`, url });
+        await navigator.share({ title, text, url });
       } catch {}
     } else {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(`${text}\n${url}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
