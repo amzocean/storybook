@@ -6,27 +6,15 @@ import {
   View,
   Image,
   StyleSheet,
-  Font,
 } from '@react-pdf/renderer';
 
-// Register a clean, premium serif font for titles
-Font.register({
-  family: 'Georgia',
-  fonts: [
-    { src: 'https://cdn.jsdelivr.net/fontsource/fonts/eb-garamond@latest/latin-400-normal.ttf', fontWeight: 400 },
-    { src: 'https://cdn.jsdelivr.net/fontsource/fonts/eb-garamond@latest/latin-700-normal.ttf', fontWeight: 700 },
-  ],
-});
-
-// Clean sans-serif for body text
-Font.register({
-  family: 'OpenSans',
-  fonts: [
-    { src: 'https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-400-normal.ttf', fontWeight: 400 },
-    { src: 'https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-600-normal.ttf', fontWeight: 600 },
-    { src: 'https://cdn.jsdelivr.net/fontsource/fonts/open-sans@latest/latin-700-normal.ttf', fontWeight: 700 },
-  ],
-});
+// Use built-in PDF fonts (no CDN fetching needed — works reliably on Vercel)
+// Times-Roman = serif (titles), Helvetica = sans-serif (body)
+const FONT_SERIF = 'Times-Roman';
+const FONT_SERIF_BOLD = 'Times-Bold';
+const FONT_SANS = 'Helvetica';
+const FONT_SANS_BOLD = 'Helvetica-Bold';
+const FONT_SANS_OBLIQUE = 'Helvetica-Oblique';
 
 const CREAM = '#FFF8F0';
 const AMBER_DARK = '#92400E';
@@ -64,9 +52,8 @@ const styles = StyleSheet.create({
     objectFit: 'cover',
   },
   coverTitle: {
-    fontFamily: 'Georgia',
+    fontFamily: FONT_SERIF_BOLD,
     fontSize: 38,
-    fontWeight: 700,
     color: AMBER_DARK,
     textAlign: 'center',
     marginBottom: 12,
@@ -74,19 +61,17 @@ const styles = StyleSheet.create({
     maxWidth: 550,
   },
   coverDescription: {
-    fontFamily: 'OpenSans',
+    fontFamily: FONT_SANS_OBLIQUE,
     fontSize: 14,
     color: AMBER_MED,
     textAlign: 'center',
     marginBottom: 20,
     maxWidth: 450,
     lineHeight: 1.5,
-    fontStyle: 'italic',
   },
   coverAuthor: {
-    fontFamily: 'OpenSans',
+    fontFamily: FONT_SANS_BOLD,
     fontSize: 16,
-    fontWeight: 600,
     color: AMBER_LIGHT,
     textAlign: 'center',
     marginBottom: 8,
@@ -97,7 +82,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   coverBadge: {
-    fontFamily: 'OpenSans',
+    fontFamily: FONT_SANS,
     fontSize: 11,
     color: GRAY,
     backgroundColor: WHITE,
@@ -139,7 +124,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   storyText: {
-    fontFamily: 'OpenSans',
+    fontFamily: FONT_SANS,
     fontSize: 20,
     color: AMBER_DARK,
     textAlign: 'center',
@@ -147,7 +132,7 @@ const styles = StyleSheet.create({
     maxWidth: 580,
   },
   pageNumber: {
-    fontFamily: 'OpenSans',
+    fontFamily: FONT_SANS,
     fontSize: 11,
     color: AMBER_LIGHT,
     position: 'absolute',
@@ -169,29 +154,25 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   endTitle: {
-    fontFamily: 'Georgia',
+    fontFamily: FONT_SERIF_BOLD,
     fontSize: 42,
-    fontWeight: 700,
     color: AMBER_DARK,
     textAlign: 'center',
     marginBottom: 20,
   },
   endAuthor: {
-    fontFamily: 'OpenSans',
+    fontFamily: FONT_SANS_BOLD,
     fontSize: 18,
-    fontWeight: 600,
     color: AMBER_MED,
     textAlign: 'center',
     marginBottom: 6,
   },
   endStoryTitle: {
-    fontFamily: 'Georgia',
+    fontFamily: FONT_SERIF,
     fontSize: 22,
-    fontWeight: 700,
     color: AMBER_DARK,
     textAlign: 'center',
     marginBottom: 30,
-    fontStyle: 'italic',
   },
   endDivider: {
     width: 60,
@@ -201,7 +182,7 @@ const styles = StyleSheet.create({
     borderRadius: 1,
   },
   endBranding: {
-    fontFamily: 'OpenSans',
+    fontFamily: FONT_SANS,
     fontSize: 13,
     color: GRAY,
     textAlign: 'center',
@@ -217,7 +198,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerText: {
-    fontFamily: 'OpenSans',
+    fontFamily: FONT_SANS,
     fontSize: 9,
     color: '#9CA3AF',
     letterSpacing: 1.5,
@@ -338,3 +319,4 @@ export function StoryPDF({
     </Document>
   );
 }
+
