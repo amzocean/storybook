@@ -328,6 +328,7 @@ export default function StoryReader({ story }: { story: StoryData }) {
               >
                 🖨️ Download Printable Storybook
               </a>
+              {/* Coloring pages disabled for now
               <a
                 href={`/api/stories/${story.id}/pdf?mode=coloring`}
                 download
@@ -335,6 +336,7 @@ export default function StoryReader({ story }: { story: StoryData }) {
               >
                 🎨 Download Coloring Pages
               </a>
+              */}
               <button
                 onClick={() => router.push('/')}
                 className="w-full sm:w-auto px-6 py-2.5 bg-white text-amber-700 font-bold rounded-full shadow-lg border-2 border-amber-200 hover:scale-105 active:scale-95 transition-all"
