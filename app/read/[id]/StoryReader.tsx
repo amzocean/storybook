@@ -146,7 +146,7 @@ export default function StoryReader({ story }: { story: StoryData }) {
               onClick={handleShare}
               className="px-3 py-1.5 bg-white/80 hover:bg-white text-gray-700 rounded-full text-sm font-bold shadow-md transition-all hover:scale-105 active:scale-95"
             >
-              {copied ? '✅ Copied!' : '�� Share'}
+              {copied ? '✅ Copied!' : '📤 Share'}
             </button>
           </div>
         </div>
