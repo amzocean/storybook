@@ -355,15 +355,21 @@ export default function CreateStoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 pb-20">
+    <div className="min-h-screen bg-gradient-to-b from-sky-300 via-sky-200 to-emerald-100 pb-20 relative overflow-hidden">
+      {/* Floating decorations */}
+      <div className="absolute top-20 left-10 text-5xl animate-float opacity-40 pointer-events-none">⭐</div>
+      <div className="absolute top-40 right-16 text-4xl animate-float-slow opacity-30 pointer-events-none">🌈</div>
+      <div className="absolute top-64 left-1/4 text-3xl animate-float opacity-20 pointer-events-none">☁️</div>
+      <div className="absolute bottom-40 right-10 text-4xl animate-wiggle opacity-30 pointer-events-none">🦕</div>
+
       {/* Header */}
-      <header className="bg-black/30 border-b border-white/10 px-6 py-4">
+      <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 shadow-lg px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <button onClick={() => router.push('/')} className="text-white/70 hover:text-white text-sm">
+          <button onClick={() => router.push('/')} className="text-white/80 hover:text-white text-sm font-medium">
             ← Back to Library
           </button>
-          <h1 className="text-white font-bold">✨ Story Workshop</h1>
-          <div className="text-white/50 text-sm">Step {step + 1}/4</div>
+          <h1 className="text-white font-bold text-lg">✨ Story Workshop</h1>
+          <div className="text-white/70 text-sm font-medium">Step {step + 1}/4</div>
         </div>
       </header>
 
@@ -372,15 +378,15 @@ export default function CreateStoryPage() {
         <div className="flex items-center gap-2">
           {STEPS.map((s, i) => (
             <div key={s} className="flex items-center gap-2 flex-1">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                i <= step ? 'bg-purple-500 text-white' : 'bg-white/10 text-white/40'
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow ${
+                i <= step ? 'bg-purple-500 text-white' : 'bg-white/60 text-gray-400'
               }`}>
                 {i < step ? '✓' : i + 1}
               </div>
-              <span className={`text-sm hidden sm:block ${i <= step ? 'text-white' : 'text-white/40'}`}>
+              <span className={`text-sm hidden sm:block font-medium ${i <= step ? 'text-gray-800' : 'text-gray-400'}`}>
                 {s}
               </span>
-              {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 ${i < step ? 'bg-purple-500' : 'bg-white/10'}`} />}
+              {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 ${i < step ? 'bg-purple-500' : 'bg-gray-300'}`} />}
             </div>
           ))}
         </div>
@@ -389,7 +395,7 @@ export default function CreateStoryPage() {
       {/* Error display */}
       {error && (
         <div className="max-w-4xl mx-auto px-6 mb-4">
-          <div className="bg-red-500/20 border border-red-500/30 text-red-300 px-4 py-3 rounded-xl text-sm">
+          <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-sm shadow">
             ⚠️ {error}
           </div>
         </div>
@@ -398,19 +404,19 @@ export default function CreateStoryPage() {
       {/* STEP 0: Premise */}
       {step === 0 && (
         <div className="max-w-2xl mx-auto px-6">
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-8">
-            <h2 className="text-white text-xl sm:text-2xl font-bold mb-2">💡 What's your story about?</h2>
-            <p className="text-gray-400 mb-6">Describe your idea in a sentence or two. The AI will build a full story from it!</p>
+          <div className="bg-white/80 backdrop-blur-sm border-4 border-yellow-300 rounded-3xl p-5 sm:p-8 shadow-xl">
+            <h2 className="text-gray-800 text-xl sm:text-2xl font-extrabold mb-2">💡 What's your story about?</h2>
+            <p className="text-gray-500 mb-6">Describe your idea in a sentence or two. The AI will build a full story from it!</p>
 
-            <label className="text-white text-sm font-medium mb-2 block">Story Title (optional)</label>
+            <label className="text-gray-700 text-sm font-medium mb-2 block">Story Title (optional)</label>
             <input
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white mb-4"
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-800 mb-4 shadow-sm focus:ring-2 focus:ring-purple-300 focus:border-purple-300"
               placeholder="e.g., Rex's Space Adventure"
             />
 
-            <label className="text-white text-sm font-medium mb-1 block">Your Story Idea</label>
+            <label className="text-gray-700 text-sm font-medium mb-1 block">Your Story Idea</label>
             <p className="text-gray-400 text-xs mb-2">
               💡 Just a short idea — 1 or 2 sentences is perfect! The AI will turn it into a full story for you.
             </p>
@@ -420,25 +426,25 @@ export default function CreateStoryPage() {
                 if (e.target.value.length <= 200) setPremise(e.target.value);
               }}
               maxLength={200}
-              className={`w-full px-4 py-3 bg-white/10 border rounded-xl text-white h-24 resize-none ${
-                premise.length > 180 ? 'border-amber-400/60' : 'border-white/20'
+              className={`w-full px-4 py-3 bg-white border rounded-xl text-gray-800 h-24 resize-none shadow-sm focus:ring-2 focus:ring-purple-300 ${
+                premise.length > 180 ? 'border-amber-400' : 'border-gray-200'
               }`}
               placeholder="e.g., A friendly dinosaur who travels to outer space and makes friends with an alien..."
             />
             <div className="flex justify-between items-center mb-4">
-              <p className="text-gray-500 text-xs">
+              <p className="text-gray-400 text-xs">
                 {premise.length === 0
                   ? '✨ Try: "A bunny who finds a magic key in the garden"'
                   : premise.length > 150
                   ? '👍 That\'s plenty! Keep it short — you can edit the full story next.'
                   : ''}
               </p>
-              <span className={`text-xs ${premise.length > 180 ? 'text-amber-400' : 'text-gray-500'}`}>
+              <span className={`text-xs ${premise.length > 180 ? 'text-amber-500' : 'text-gray-400'}`}>
                 {premise.length}/200
               </span>
             </div>
 
-            <label className="text-white text-sm font-medium mb-2 block">Categories <span className="text-white/50">(pick one or more)</span></label>
+            <label className="text-gray-700 text-sm font-medium mb-2 block">Categories <span className="text-gray-400">(pick one or more)</span></label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
               {categories.map(cat => {
                 const isSelected = selectedCategories.includes(cat.id);
@@ -452,10 +458,10 @@ export default function CreateStoryPage() {
                           : [...prev, cat.id]
                       );
                     }}
-                    className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                    className={`px-3 py-2 rounded-xl text-sm font-medium transition-all shadow-sm ${
                       isSelected
-                        ? 'ring-2 ring-purple-400 bg-white/15 text-white'
-                        : 'bg-white/5 text-white/60 hover:bg-white/10'
+                        ? 'ring-2 ring-purple-400 bg-purple-100 text-purple-800'
+                        : 'bg-white text-gray-600 hover:bg-purple-50'
                     }`}
                   >
                     {cat.emoji} {cat.name}
@@ -464,7 +470,7 @@ export default function CreateStoryPage() {
               })}
             </div>
 
-            <label className="text-white text-sm font-medium mb-2 block">Number of Pages</label>
+            <label className="text-gray-700 text-sm font-medium mb-2 block">Number of Pages</label>
             <input
               type="range"
               min={4}
@@ -473,9 +479,9 @@ export default function CreateStoryPage() {
               onChange={e => setPageCount(Number(e.target.value))}
               className="w-full mb-2"
             />
-            <p className="text-gray-400 text-sm mb-6">{pageCount} pages</p>
+            <p className="text-gray-500 text-sm mb-6">{pageCount} pages</p>
 
-            <label className="text-white text-sm font-medium mb-2 block">Detail Level</label>
+            <label className="text-gray-700 text-sm font-medium mb-2 block">Detail Level</label>
             <input
               type="range"
               min={1}
@@ -484,7 +490,7 @@ export default function CreateStoryPage() {
               onChange={e => setDetailLevel(Number(e.target.value))}
               className="w-full mb-2"
             />
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-gray-500 text-sm mb-6">
               {detailLevel === 1 && '🍼 Toddler — 1 simple sentence per page'}
               {detailLevel === 2 && '🧒 Early Reader — 2 short sentences per page'}
               {detailLevel === 3 && '📖 Story Time — 3-4 sentences per page'}
@@ -495,7 +501,7 @@ export default function CreateStoryPage() {
             <button
               onClick={() => { setMode('ai'); generateOutline(); }}
               disabled={!premise || loading || selectedCategories.length === 0}
-              className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold rounded-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-extrabold rounded-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
             >
               {loading ? (
                 <span className="inline-flex items-center gap-2">
@@ -506,14 +512,14 @@ export default function CreateStoryPage() {
             </button>
 
             <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
-              <div className="relative flex justify-center"><span className="bg-white/5 px-3 text-gray-500 text-xs">or</span></div>
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-300" /></div>
+              <div className="relative flex justify-center"><span className="bg-white/80 px-3 text-gray-400 text-xs">or</span></div>
             </div>
 
             <button
               onClick={startBlankPages}
               disabled={loading || selectedCategories.length === 0}
-              className="w-full py-3 bg-white/5 border border-white/20 hover:bg-white/10 text-white/70 hover:text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-white border border-gray-200 hover:bg-purple-50 text-gray-600 hover:text-purple-700 font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
               ✏️ I want to write it myself — start with blank pages
             </button>
@@ -524,11 +530,11 @@ export default function CreateStoryPage() {
       {/* STEP 1: Outline — Co-Author Mode */}
       {step === 1 && (
         <div className="max-w-3xl mx-auto px-6">
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-8">
-            <h2 className="text-white text-xl sm:text-2xl font-bold mb-2">
+          <div className="bg-white/80 backdrop-blur-sm border-4 border-yellow-300 rounded-3xl p-5 sm:p-8 shadow-xl">
+            <h2 className="text-gray-800 text-xl sm:text-2xl font-extrabold mb-2">
               {mode === 'write' ? '✏️ Write Your Story' : '✏️ Co-Author Mode'}
             </h2>
-            <p className="text-gray-400 mb-2">
+            <p className="text-gray-500 mb-2">
               {mode === 'write'
                 ? 'Write what happens on each page — AI will illustrate your words!'
                 : 'Write your own version of each page, or keep the AI\'s suggestion!'}
@@ -536,9 +542,9 @@ export default function CreateStoryPage() {
             
             {/* Co-author score — only in AI mode */}
             {mode === 'ai' && (
-            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-2 mb-6 flex items-center gap-2">
-              <span className="text-yellow-400 text-lg">{'⭐'.repeat(editedByKid.size)}{editedByKid.size === 0 ? '📝' : ''}</span>
-              <span className="text-yellow-200 text-sm font-medium">
+            <div className="bg-yellow-50 border border-yellow-300 rounded-xl px-4 py-2 mb-6 flex items-center gap-2">
+              <span className="text-yellow-500 text-lg">{'⭐'.repeat(editedByKid.size)}{editedByKid.size === 0 ? '📝' : ''}</span>
+              <span className="text-yellow-700 text-sm font-medium">
                 {editedByKid.size === 0
                   ? 'Try writing your own pages to earn stars!'
                   : `You wrote ${editedByKid.size}/${pages.length} pages!`}
@@ -547,18 +553,18 @@ export default function CreateStoryPage() {
             )}
 
             {characterSheet && (
-              <div className="bg-purple-900/30 border border-purple-500/30 rounded-xl p-4 mb-6">
-                <h3 className="text-purple-300 text-sm font-bold mb-2">🎭 Character Sheet (used for consistent illustrations)</h3>
-                <p className="text-white text-sm"><strong>Name:</strong> {characterSheet.name}</p>
-                <p className="text-white text-sm"><strong>Look:</strong> {characterSheet.appearance}</p>
-                <p className="text-white text-sm"><strong>Art Style:</strong> {characterSheet.style}</p>
+              <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6">
+                <h3 className="text-purple-600 text-sm font-bold mb-2">🎭 Character Sheet (used for consistent illustrations)</h3>
+                <p className="text-gray-700 text-sm"><strong>Name:</strong> {characterSheet.name}</p>
+                <p className="text-gray-700 text-sm"><strong>Look:</strong> {characterSheet.appearance}</p>
+                <p className="text-gray-700 text-sm"><strong>Art Style:</strong> {characterSheet.style}</p>
               </div>
             )}
 
             <div className="space-y-4 mb-8">
               {pages.map((page, i) => (
-                <div key={i} className={`bg-white/5 border rounded-xl p-4 transition-all ${
-                  editedByKid.has(i) ? 'border-yellow-500/40 bg-yellow-500/5' : 'border-white/10'
+                <div key={i} className={`bg-white border rounded-xl p-4 transition-all shadow-sm ${
+                  editedByKid.has(i) ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200'
                 }`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-purple-400 text-xs font-bold">
@@ -568,7 +574,7 @@ export default function CreateStoryPage() {
                       <button
                         onClick={() => fixMyStory(i)}
                         disabled={fixingPage === i || !editedByKid.has(i)}
-                        className="px-2.5 py-1 bg-blue-600/80 hover:bg-blue-500 text-white text-xs rounded-lg disabled:opacity-30 transition-all"
+                        className="px-2.5 py-1 bg-blue-500 hover:bg-blue-400 text-white text-xs rounded-lg disabled:opacity-30 transition-all shadow-sm"
                         title="AI polishes your writing while keeping your ideas"
                       >
                         {fixingPage === i ? '...' : '🪄 Make It Shine'}
@@ -576,7 +582,7 @@ export default function CreateStoryPage() {
                       <button
                         onClick={() => surpriseMe(i)}
                         disabled={fixingPage === i}
-                        className="px-2.5 py-1 bg-pink-600/80 hover:bg-pink-500 text-white text-xs rounded-lg disabled:opacity-30 transition-all"
+                        className="px-2.5 py-1 bg-pink-500 hover:bg-pink-400 text-white text-xs rounded-lg disabled:opacity-30 transition-all shadow-sm"
                         title="AI writes a brand new version"
                       >
                         {fixingPage === i ? '...' : '✨ Surprise Me!'}
@@ -596,7 +602,7 @@ export default function CreateStoryPage() {
                         setEditedByKid(prev => { const next = new Set(prev); next.delete(i); return next; });
                       }
                     }}
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm h-24 resize-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-800 text-sm h-24 resize-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-all shadow-sm"
                     placeholder="Write your own version of this page..."
                   />
                   <p className="text-gray-500 text-xs mt-2 italic">🎨 {page.imageDescription}</p>
@@ -607,20 +613,20 @@ export default function CreateStoryPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setStep(0)}
-                className="px-6 py-3 bg-white/10 text-white rounded-xl"
+                className="px-6 py-3 bg-white text-gray-600 rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50"
               >
                 ← Back
               </button>
               <button
                 onClick={() => { setStep(2); generateAllImages(); }}
                 disabled={mode === 'write' && pages.some(p => !p.text.trim())}
-                className="flex-1 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-extrabold rounded-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               >
                 🎨 Generate Illustrations
               </button>
             </div>
             {mode === 'write' && pages.some(p => !p.text.trim()) && (
-              <p className="text-center text-amber-400 text-xs mt-2">✏️ Write something on every page before generating art!</p>
+              <p className="text-center text-amber-600 text-xs mt-2">✏️ Write something on every page before generating art!</p>
             )}
           </div>
         </div>
@@ -629,19 +635,19 @@ export default function CreateStoryPage() {
       {/* STEP 2: Generating Images */}
       {step === 2 && (
         <div className="max-w-3xl mx-auto px-6">
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-8 text-center">
+          <div className="bg-white/80 backdrop-blur-sm border-4 border-yellow-300 rounded-3xl p-5 sm:p-8 text-center shadow-xl">
             <div className="text-5xl sm:text-6xl mb-4 animate-pulse">🎨</div>
-            <h2 className="text-white text-xl sm:text-2xl font-bold mb-2">Creating Illustrations...</h2>
-            <p className="text-gray-400 mb-6">
+            <h2 className="text-gray-800 text-xl sm:text-2xl font-extrabold mb-2">Creating Illustrations...</h2>
+            <p className="text-gray-500 mb-6">
               DALL·E is painting your story! This takes about 30 seconds per page.
             </p>
-            <div className="w-full bg-white/10 rounded-full h-4 mb-4">
+            <div className="w-full bg-gray-200 rounded-full h-4 mb-4 shadow-inner">
               <div
                 className="bg-gradient-to-r from-purple-500 to-pink-500 h-4 rounded-full transition-all duration-500"
                 style={{ width: `${(imageProgress / pages.length) * 100}%` }}
               />
             </div>
-            <p className="text-white/60 text-sm">
+            <p className="text-gray-500 text-sm">
               {imageProgress} / {pages.length} pages illustrated
               {!generatingImages && imageProgress > 0 && ' + cover image'}
             </p>
@@ -650,11 +656,11 @@ export default function CreateStoryPage() {
             <div className="mt-6 -mx-2">
               <div className="flex gap-3 overflow-x-auto pb-3 px-2 snap-x snap-mandatory scrollbar-thin">
                 {pages.map((page, i) => (
-                  <div key={i} className="flex-none w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-white/5 snap-start">
+                  <div key={i} className="flex-none w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-white border border-gray-200 shadow-sm snap-start">
                     {page.image_path ? (
                       <img src={page.image_path} alt={`Page ${i+1}`} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/20 text-xs">
+                      <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">
                         {i < imageProgress ? '⏳' : `P${i+1}`}
                       </div>
                     )}
@@ -665,7 +671,7 @@ export default function CreateStoryPage() {
 
             {/* Mini-game while waiting */}
             {generatingImages && (
-              <div className="mt-4 border-t border-white/10 pt-4">
+              <div className="mt-4 border-t border-gray-200 pt-4">
                 <StarCatcher />
               </div>
             )}
@@ -676,55 +682,55 @@ export default function CreateStoryPage() {
       {/* STEP 3: Review & Publish */}
       {step === 3 && (
         <div className="max-w-4xl mx-auto px-6">
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-5 sm:p-8">
-            <h2 className="text-white text-xl sm:text-2xl font-bold mb-2">📖 Review Your Story</h2>
-            <p className="text-gray-400 mb-6">Here&apos;s how it&apos;ll look! Make sure you&apos;re happy before publishing.</p>
+          <div className="bg-white/80 backdrop-blur-sm border-4 border-yellow-300 rounded-3xl p-5 sm:p-8 shadow-xl">
+            <h2 className="text-gray-800 text-xl sm:text-2xl font-extrabold mb-2">📖 Review Your Story</h2>
+            <p className="text-gray-500 mb-6">Here&apos;s how it&apos;ll look! Make sure you&apos;re happy before publishing.</p>
 
             {/* Title edit */}
             <input
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white text-xl font-bold mb-4"
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-800 text-xl font-bold mb-4 shadow-sm focus:ring-2 focus:ring-purple-300"
             />
 
             {/* Author Certificate */}
             <div className="relative mb-8">
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-400 rounded-3xl blur-sm opacity-30" />
-              <div className="relative bg-gradient-to-b from-amber-950/80 via-yellow-950/60 to-amber-950/80 border-2 border-yellow-500/50 rounded-3xl p-1">
-                <div className="border border-yellow-600/40 border-dashed rounded-2xl p-6 sm:p-8 text-center">
-                  <div className="text-yellow-400/60 text-2xl tracking-[0.5em] mb-2">✦ ✦ ✦</div>
-                  <h3 className="text-yellow-300 text-xs uppercase tracking-[0.3em] font-semibold mb-1">Certificate of Authorship</h3>
-                  <div className="w-16 h-px bg-gradient-to-r from-transparent via-yellow-500/60 to-transparent mx-auto mb-4" />
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-400 rounded-3xl blur-sm opacity-40" />
+              <div className="relative bg-gradient-to-b from-amber-50 via-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-3xl p-1 shadow-lg">
+                <div className="border border-yellow-400/50 border-dashed rounded-2xl p-6 sm:p-8 text-center">
+                  <div className="text-yellow-500 text-2xl tracking-[0.5em] mb-2">✦ ✦ ✦</div>
+                  <h3 className="text-yellow-700 text-xs uppercase tracking-[0.3em] font-semibold mb-1">Certificate of Authorship</h3>
+                  <div className="w-16 h-px bg-gradient-to-r from-transparent via-yellow-400 to-transparent mx-auto mb-4" />
 
-                  <p className="text-amber-200/70 text-sm italic mb-3">This story was brought to life by</p>
+                  <p className="text-amber-600 text-sm italic mb-3">This story was brought to life by</p>
 
                   <input
                     value={authorName}
                     onChange={e => setAuthorName(e.target.value)}
-                    className="w-full max-w-sm mx-auto block px-4 py-3 bg-transparent border-b-2 border-yellow-500/40 text-white text-2xl text-center font-serif placeholder:text-white/25 focus:border-yellow-400 focus:outline-none transition-colors"
+                    className="w-full max-w-sm mx-auto block px-4 py-3 bg-transparent border-b-2 border-yellow-400 text-gray-800 text-2xl text-center font-serif placeholder:text-gray-300 focus:border-yellow-500 focus:outline-none transition-colors"
                     placeholder="Your name here..."
                   />
 
                   {authorName ? (
                     <div className="mt-4">
                       <div className={`inline-block px-6 py-2 rounded-full text-sm font-bold tracking-wide ${
-                        authorCredit === 'authored' ? 'bg-yellow-500/25 text-yellow-300 ring-1 ring-yellow-500/40' :
-                        authorCredit === 'coauthored' ? 'bg-blue-500/25 text-blue-300 ring-1 ring-blue-500/40' :
-                        'bg-purple-500/25 text-purple-300 ring-1 ring-purple-500/40'
+                        authorCredit === 'authored' ? 'bg-yellow-100 text-yellow-700 ring-1 ring-yellow-400' :
+                        authorCredit === 'coauthored' ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-400' :
+                        'bg-purple-100 text-purple-700 ring-1 ring-purple-400'
                       }`}>
                         {authorCredit === 'authored' ? '⭐ Full Author' : authorCredit === 'coauthored' ? '🤝 Co-Author' : '💡 Story Creator'}
                       </div>
-                      <p className="text-amber-200/50 text-xs mt-2 italic">{creditLine}</p>
-                      <p className="text-yellow-500/40 text-xs mt-1">
+                      <p className="text-amber-600 text-xs mt-2 italic">{creditLine}</p>
+                      <p className="text-yellow-600 text-xs mt-1">
                         {editedByKid.size}/{pages.length} pages written by you {'⭐'.repeat(editedByKid.size)}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-pink-400 text-sm mt-4 animate-pulse">✨ Every great story deserves a name on it!</p>
+                    <p className="text-pink-500 text-sm mt-4 animate-pulse">✨ Every great story deserves a name on it!</p>
                   )}
 
-                  <div className="w-16 h-px bg-gradient-to-r from-transparent via-yellow-500/60 to-transparent mx-auto mt-4 mb-2" />
-                  <div className="text-yellow-400/60 text-2xl tracking-[0.5em]">✦ ✦ ✦</div>
+                  <div className="w-16 h-px bg-gradient-to-r from-transparent via-yellow-400 to-transparent mx-auto mt-4 mb-2" />
+                  <div className="text-yellow-500 text-2xl tracking-[0.5em]">✦ ✦ ✦</div>
                 </div>
               </div>
             </div>
@@ -739,7 +745,7 @@ export default function CreateStoryPage() {
             {/* Pages preview */}
             <div className="space-y-6 mb-8">
               {pages.map((page, i) => (
-                <div key={i} className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start bg-white/5 rounded-xl p-4">
+                <div key={i} className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
                   {page.image_path && (
                     <img src={page.image_path} alt={`Page ${i+1}`} className="w-full sm:w-32 h-48 sm:h-32 object-cover rounded-lg flex-shrink-0" />
                   )}
@@ -747,7 +753,7 @@ export default function CreateStoryPage() {
                     <span className="text-purple-400 text-xs font-bold">
                       PAGE {i + 1} {editedByKid.has(i) && '⭐'}
                     </span>
-                    <p className="text-white mt-1">{page.text}</p>
+                    <p className="text-gray-700 mt-1">{page.text}</p>
                   </div>
                 </div>
               ))}
@@ -756,20 +762,20 @@ export default function CreateStoryPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setStep(1)}
-                className="px-6 py-3 bg-white/10 text-white rounded-xl"
+                className="px-6 py-3 bg-white text-gray-600 rounded-xl shadow-sm border border-gray-200 hover:bg-gray-50"
               >
                 ← Edit Outline
               </button>
               <button
                 onClick={publishStory}
                 disabled={publishing || !authorName.trim()}
-                className="flex-1 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold rounded-xl text-lg disabled:opacity-50"
+                className="flex-1 py-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white font-extrabold rounded-xl text-lg disabled:opacity-50 shadow-lg"
               >
                 {publishing ? '📤 Publishing...' : '🚀 Publish to Library!'}
               </button>
             </div>
             {!authorName.trim() && (
-              <p className="text-center text-pink-400 text-sm mt-2 animate-pulse">⬆️ Please add your name above before publishing!</p>
+              <p className="text-center text-pink-500 text-sm mt-2 animate-pulse">⬆️ Please add your name above before publishing!</p>
             )}
           </div>
         </div>
