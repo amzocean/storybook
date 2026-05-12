@@ -250,6 +250,7 @@ export default function CreateStoryPage() {
     let completed = 0;
 
     // Process pages in parallel batches
+    const imageErrors: string[] = [];
     const generatePage = async (i: number) => {
       try {
         const res = await fetch('/api/generate', {
@@ -264,11 +265,16 @@ export default function CreateStoryPage() {
           }),
         });
         const data = await res.json();
-        if (data.imageUrl) {
+        if (!res.ok || data.error) {
+          const errMsg = data.error || `HTTP ${res.status}`;
+          imageErrors.push(`Page ${i + 1}: ${errMsg}`);
+          console.error(`Image gen failed for page ${i + 1}: ${errMsg}`);
+        } else if (data.imageUrl) {
           updated[i] = { ...updated[i], image_path: data.imageUrl };
         }
-      } catch (e) {
-        console.error(`Failed to generate image for page ${i + 1}`);
+      } catch (e: any) {
+        imageErrors.push(`Page ${i + 1}: ${e.message || 'network error'}`);
+        console.error(`Failed to generate image for page ${i + 1}`, e);
       }
       completed++;
       setImageProgress(completed);
@@ -293,9 +299,18 @@ export default function CreateStoryPage() {
         body: JSON.stringify({ action: 'generate-cover', title, description: premise, category: selectedCategories.join(','), storyId }),
       });
       const data = await res.json();
-      if (data.imageUrl) setCoverImage(data.imageUrl);
-    } catch (e) {
-      console.error('Failed to generate cover');
+      if (!res.ok || data.error) {
+        imageErrors.push(`Cover: ${data.error || `HTTP ${res.status}`}`);
+      } else if (data.imageUrl) {
+        setCoverImage(data.imageUrl);
+      }
+    } catch (e: any) {
+      imageErrors.push(`Cover: ${e.message || 'network error'}`);
+      console.error('Failed to generate cover', e);
+    }
+
+    if (imageErrors.length > 0) {
+      setError(`Some images failed to generate:\n${imageErrors.join('\n')}`);
     }
 
     setGeneratingImages(false);
