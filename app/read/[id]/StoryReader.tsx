@@ -338,24 +338,74 @@ export default function StoryReader({ story }: { story: StoryData }) {
         ))}
       </div>
 
-      {/* End of story celebration */}
+      {/* End of story — card matching cover style */}
       {isLastPage && (
-        <div className="text-center pb-6">
-          <p className="text-2xl font-extrabold text-amber-700 animate-bounce">🎉 The End! 🎉</p>
-          {story.author_name && (
-            <p className="text-amber-600 font-semibold mt-2 text-lg">
-              {getAuthorEmoji(story.author_credit)} {getAuthorLabel(story.author_credit)}{' '}
-              <span className="text-amber-800">{story.author_name}</span>
-            </p>
-          )}
-          <button
-            onClick={() => router.push('/admin/create')}
-            className="mt-4 px-6 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all"
-          >
-            ✨ Create Your Own Story!
-          </button>
+        <div className="flex justify-center pb-6 px-4">
+          <div className="max-w-lg w-full text-center">
+            {/* Cover image callback */}
+            {story.cover_image && (
+              <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden mx-auto mb-4 shadow-xl border-4 border-white">
+                <img
+                  src={story.cover_image}
+                  alt={story.title}
+                  className="w-full h-full object-cover"
+                  draggable={false}
+                />
+              </div>
+            )}
+
+            <p className="text-3xl sm:text-4xl font-extrabold text-amber-700 mb-1">🎉 The End!</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-amber-800 mb-2">{story.title}</h3>
+
+            {story.author_name && (
+              <p className="text-amber-600 font-semibold text-base sm:text-lg mb-4">
+                {getAuthorEmoji(story.author_credit)} {getAuthorLabel(story.author_credit)}{' '}
+                <span className="text-amber-800 font-bold">{story.author_name}</span>
+              </p>
+            )}
+
+            {/* Metadata badges */}
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-5">
+              {story.categoryEmoji && story.categoryName && (
+                <span className="px-3 py-1 bg-white/80 rounded-full text-sm font-bold shadow-sm border border-amber-200/50">
+                  {story.categoryEmoji} {story.categoryName}
+                </span>
+              )}
+              {story.age_range && (
+                <span className="px-3 py-1 bg-white/80 rounded-full text-sm font-bold shadow-sm border border-amber-200/50">
+                  👶 Ages {story.age_range}
+                </span>
+              )}
+              <span className="px-3 py-1 bg-white/80 rounded-full text-sm font-bold shadow-sm border border-amber-200/50">
+                📖 {totalPages} pages
+              </span>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                onClick={() => router.push('/admin/create')}
+                className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all"
+              >
+                ✨ Create Your Own Story
+              </button>
+              <button
+                onClick={handleShare}
+                className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-blue-400 to-cyan-500 text-white font-bold rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all"
+              >
+                {copied ? '✅ Copied!' : '📤 Share This Story'}
+              </button>
+              <button
+                onClick={() => router.push('/')}
+                className="w-full sm:w-auto px-6 py-2.5 bg-white text-amber-700 font-bold rounded-full shadow-lg border-2 border-amber-200 hover:scale-105 active:scale-95 transition-all"
+              >
+                📚 Read More Stories
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
 }
+
