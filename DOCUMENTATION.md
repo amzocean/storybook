@@ -275,7 +275,7 @@ PIN `1234` is checked client-side in two files:
 - Green progress bar, page dots, "🎉 The End!" celebration on last page
 - Author credit displayed on final page (with co-author badge if applicable)
 - Mobile: visible Back/Next buttons below content
-- **Share button**: "Share" text button in top bar — uses Web Share API (native share sheet) on mobile, clipboard copy on desktop with "✅ Copied!" feedback
+- **Share button**: "Share" text button in top bar — uses Web Share API (native share sheet) on mobile, clipboard copy on desktop with "✅ Copied!" feedback. Share message includes author credit (e.g., "Read 'My Story', written by Alex on Story Sparks! ✨")
 - Each story has a unique shareable URL (`/read/[id]`)
 
 ### Admin Dashboard (`/admin`)
@@ -287,6 +287,7 @@ PIN `1234` is checked client-side in two files:
 
 ### Story Creator (`/admin/create`)
 - **No PIN** — kids can access directly
+- Bright sky-blue theme matching the homepage (floating decorations, white cards, rainbow header)
 - 4-step wizard: Premise → Outline → Story & Art → Publish
 - **Step 1**: Title, premise (200-char max with counter/hints), category, page count, detail level slider (1–5)
 - **Two creation modes** (chosen via buttons at bottom of Step 1):
