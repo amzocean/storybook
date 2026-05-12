@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 
-const ADMIN_PIN = '1234';
+const ADMIN_PIN = '5678';
 
 interface Page {
   id: string;

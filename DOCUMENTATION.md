@@ -246,7 +246,7 @@ URL:    {SUPABASE_URL}/storage/v1/object/public/story-images/{storyId}/{filename
 
 ### Admin PIN Auth
 
-PIN `1234` is checked client-side in two files:
+PIN `5678` is checked client-side in two files:
 - `app/admin/page.tsx` — admin dashboard (moderation queue, story management)
 - `app/admin/manage/[id]/page.tsx` — story editor
 
