@@ -45,6 +45,7 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedReader, setSelectedReader] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const storyCta = useMemo(() => STORY_CTAS[Math.floor(Math.random() * STORY_CTAS.length)], []);
@@ -74,7 +75,14 @@ export default function HomePage() {
     const catMatch = selectedCategory === 'all' || storyCategories.includes(selectedCategory);
     const readerMatch = selectedReader === 'all' || 
       readerLevels.find(r => r.id === selectedReader)?.levels.includes(s.detail_level || 3);
-    return catMatch && readerMatch;
+    const q = searchQuery.toLowerCase().trim();
+    const searchMatch = !q || 
+      s.title.toLowerCase().includes(q) ||
+      (s.description || '').toLowerCase().includes(q) ||
+      (s.tags || '').toLowerCase().includes(q) ||
+      (s.author_name || '').toLowerCase().includes(q) ||
+      (s.category || '').toLowerCase().includes(q);
+    return catMatch && readerMatch && searchMatch;
   });
 
   const getCategoryInfo = (catId: string) => categories.find(c => c.id === catId);
@@ -163,6 +171,35 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
+      </section>
+
+      {/* Search Bar */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+        <div className="relative max-w-2xl mx-auto">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <span className="text-2xl">🔍</span>
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search stories... (dinosaurs, bedtime, space, dragons...)"
+            className="w-full pl-12 pr-12 py-3.5 sm:py-4 rounded-full border-4 border-purple-200 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 bg-white text-gray-800 text-base sm:text-lg font-medium placeholder-gray-400 shadow-lg transition-all outline-none"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <span className="text-xl font-bold">✕</span>
+            </button>
+          )}
+        </div>
+        {searchQuery && (
+          <p className="text-center text-sm text-gray-500 mt-2 font-medium">
+            {filteredStories.length} {filteredStories.length === 1 ? 'story' : 'stories'} found for &quot;{searchQuery}&quot;
+          </p>
+        )}
       </section>
 
       {/* Category Filter */}
