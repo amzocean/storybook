@@ -196,7 +196,6 @@ Do NOT include any text or words in the image.`;
     n: 1,
     size: '1024x1024',
     quality: 'standard',
-    style: 'vivid',
   });
 
   return response.data?.[0]?.url || '';
@@ -258,13 +257,12 @@ export async function generateCoverImage(title: string, description: string, cat
   }
   const response = await openai.images.generate({
     model: 'dall-e-3',
-    prompt: `Children's storybook cover illustration of fictional cartoon characters, colorful, eye-catching, cartoon style for ages 5-8. 
+    prompt: `Vivid, colorful children's storybook cover illustration of fictional cartoon characters, eye-catching, cartoon style for ages 5-8. 
     Title: "${safeTitle}". Story about: ${safeDescription}. Category: ${category}. 
     Make it vibrant and appealing to young readers. Do NOT include any text in the image.`,
     n: 1,
     size: '1024x1024',
     quality: 'standard',
-    style: 'vivid',
   });
 
   return response.data?.[0]?.url || '';
