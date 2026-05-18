@@ -9,7 +9,7 @@ A kid-friendly AI-powered storybook website where children create, illustrate, a
 - **Frontend**: Next.js 15 (App Router), React 19, Tailwind CSS
 - **Backend**: Next.js API routes (serverless on Vercel)
 - **Database**: Supabase (PostgreSQL + Storage)
-- **AI**: OpenAI GPT-4o (story text) + DALL·E 3 (illustrations)
+- **AI**: OpenAI GPT-4o (story text) + GPT-Image-1 (illustrations)
 - **Hosting**: Vercel (Hobby tier)
 - **Domain**: storysparks.fun (GoDaddy DNS)
 

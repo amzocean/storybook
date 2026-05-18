@@ -2,7 +2,7 @@
 
 ## Overview
 
-A kid-friendly, Netflix-style storybook website that lets children browse, read, and co-author illustrated stories. AI-powered story generation (OpenAI GPT-4o for text + DALL·E 3 for illustrations) with a 3-layer content safety system, moderation queue, and co-author mode so kids can write and edit their own stories.
+A kid-friendly, Netflix-style storybook website that lets children browse, read, and co-author illustrated stories. AI-powered story generation (OpenAI GPT-4o for text + GPT-Image-1 for illustrations) with a 3-layer content safety system, moderation queue, and co-author mode so kids can write and edit their own stories.
 
 **GitHub Repo**: https://github.com/amzocean/storybook  
 **Live Site**: https://storysparks.fun (deployed on Vercel, auto-deploys from `main`)  
@@ -19,7 +19,7 @@ A kid-friendly, Netflix-style storybook website that lets children browse, read,
 | Language       | TypeScript 5.x                                   |
 | UI             | React 19.2.4, Tailwind CSS 4.x                   |
 | Database       | Supabase (Postgres) via `@supabase/supabase-js`  |
-| AI             | OpenAI API (`openai` npm) — GPT-4o + DALL·E 3    |
+| AI             | OpenAI API (`openai` npm) — GPT-4o + GPT-Image-1 |
 | Image Storage  | Supabase Storage (public bucket `story-images`)   |
 | Font           | Baloo 2 (Google Fonts) — round, kid-friendly      |
 | Auth           | Simple PIN code (`1234`) on admin dashboard only   |
@@ -53,8 +53,8 @@ storynook/
 │       └── generate/route.ts    # POST — AI generation (outline, image, cover, re-edit)
 ├── lib/
 │   ├── supabase.ts              # Supabase client (service role) + storage URL helper
-│   ├── openai.ts                # GPT-4o + DALL·E 3 + content safety functions
-│   ├── storage.ts               # Download DALL·E images → upload to Supabase Storage
+│   ├── openai.ts                # GPT-4o + GPT-Image-1 + content safety functions
+│   ├── storage.ts               # Save base64 images → upload to Supabase Storage
 │   └── rate-limit.ts            # In-memory per-IP + global daily rate limiter
 ├── public/
 │   └── favicon.svg              # Custom book icon (blue-purple gradient)
@@ -103,7 +103,7 @@ Supabase Postgres. Schema defined in `supabase-setup.sql`.
 | page_number | INTEGER     |                                  |
 | text        | TEXT        | Story text for this page         |
 | image_path  | TEXT        | Supabase Storage public URL      |
-| image_prompt| TEXT        | DALL·E prompt used               |
+| image_prompt| TEXT        | Image generation prompt used     |
 | created_at  | TIMESTAMPTZ | Default `now()`                  |
 
 ### `categories`
@@ -201,7 +201,7 @@ Kid writes all page text from scratch. AI only generates illustrations.
 - Co-author score banner is hidden (no AI text to compare against)
 - "Make It Shine" and "Surprise Me" buttons still work (kid can ask AI for help)
 - All pages must have text before "Generate Illustrations" is enabled
-- The premise/story idea field provides context for DALL·E image generation
+- The premise/story idea field provides context for image generation
 
 ### Detail Level System
 
@@ -225,7 +225,7 @@ Default is level 3. The slider is on the create page (Step 1).
 - Admin can still **unpublish** any story from the admin dashboard
 - Admin dashboard shows all stories with publish/unpublish toggle and delete buttons
 
-### Parallel DALL·E Image Generation
+### Parallel Image Generation
 
 Uses a 3-worker pool pattern in the create page:
 - Shared queue of pages needing images
@@ -236,14 +236,14 @@ Uses a 3-worker pool pattern in the create page:
 ### OpenAI Integration
 
 - **Text generation**: GPT-4o with temperature 0.8 (creative but coherent)
-- **Image generation**: DALL·E 3, 1024x1024, standard quality, vivid style
-- **Character consistency**: `generateStoryOutline` returns a `characterSheet` (name, appearance, style) that's used in all DALL·E prompts for that story
-- **Prompt prefix**: All DALL·E prompts include character appearance details for consistency
-- **Cost**: ~$0.04–0.08 per DALL·E image, ~$0.50 per complete 6-page story
+- **Image generation**: GPT-Image-1, 1024x1024, medium quality (returns base64)
+- **Character consistency**: `generateStoryOutline` returns a `characterSheet` (name, appearance, style) that's used in all image prompts for that story
+- **Prompt prefix**: All image prompts include character appearance details for consistency
+- **Cost**: ~$0.04 per image (medium quality), ~$0.40 per complete 6-page story
 
 ### Image Storage
 
-DALL·E returns temporary URLs (~1 hour). Images are immediately downloaded and uploaded to Supabase Storage via `lib/storage.ts`:
+GPT-Image-1 returns base64-encoded PNG data. Images are decoded and uploaded directly to Supabase Storage via `lib/storage.ts`:
 ```
 Bucket: story-images (public)
 Path:   {storyId}/cover.png
@@ -253,7 +253,7 @@ Path:   {storyId}/cover.png
 URL:    {SUPABASE_URL}/storage/v1/object/public/story-images/{storyId}/{filename}
 ```
 
-`downloadAndSaveImage()` downloads from DALL·E URL → uploads to Supabase with `upsert: true`.
+`saveBase64Image()` decodes base64 → uploads to Supabase with `upsert: true`.
 `deleteStoryImages()` lists and removes all files in a story's folder on delete.
 
 ### Admin PIN Auth
@@ -307,7 +307,7 @@ PIN `5678` is checked client-side in two files:
   - **"✏️ I want to write it myself"** — creates blank pages for the kid to write on; AI only generates illustrations
 - **Step 2 (AI mode)**: AI-generated outline. Co-author mode: editable textareas, "Make It Shine ✨" (AI polish), "Surprise Me 🎲" (AI rewrite), ⭐ badges on edited pages
 - **Step 2 (Write mode)**: Blank textareas for each page. Heading says "Write Your Story". Co-author score hidden. All pages marked as kid-written. Cannot proceed to art until every page has text.
-- **Step 3**: Parallel DALL·E image generation (3 workers) with StarCatcher minigame
+- **Step 3**: Parallel image generation (3 workers) with StarCatcher minigame
 - **Step 4**: Review, add cover image, publish (goes to `pending_review`)
 
 ### Story Editor (`/admin/manage/[id]`)
@@ -449,7 +449,7 @@ npx tsx scripts/export-stories.ts
 
 ### Potential Enhancements
 - **Email notifications on story submission** — Send an email to the admin when a story is submitted. Use Resend (free tier: 100 emails/day) with a `lib/email.ts` helper. Requires `RESEND_API_KEY` and `NOTIFICATION_EMAIL` env vars.
-- **Stable Diffusion migration** — Replace DALL·E 3 with Stable Diffusion (SDXL/SD3/Flux) via Replicate or fal.ai API for ~5-10x cost savings ($0.005-0.01 vs $0.04-0.08 per image).
+- **Stable Diffusion migration** — Replace GPT-Image-1 with Stable Diffusion (SDXL/SD3/Flux) via Replicate or fal.ai API for cost savings at scale.
 - **Read-aloud mode** — Text-to-speech using Web Speech API or ElevenLabs
 - Multiple user profiles (siblings)
 - Reading progress tracking / bookmarks
@@ -464,8 +464,8 @@ npx tsx scripts/export-stories.ts
 
 ## Troubleshooting
 
-### DALL·E image URLs expire
-DALL·E URLs are temporary (~1 hour). Images are immediately downloaded and uploaded to Supabase Storage via `lib/storage.ts`. If an image shows broken, regenerate it from the admin editor (`/admin/manage/[id]`).
+### Image not showing after generation
+GPT-Image-1 returns base64 data that is uploaded directly to Supabase Storage. If an image shows broken, regenerate it from the admin editor (`/admin/manage/[id]`).
 
 ### Next.js dev overlay in bottom-left
 This is the Next.js dev overlay — only shows in `npm run dev`, not in production builds.
