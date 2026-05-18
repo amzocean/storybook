@@ -2,13 +2,8 @@ import { supabase, getStoragePublicUrl } from './supabase';
 
 const BUCKET = 'story-images';
 
-export async function downloadAndSaveImage(url: string, storyId: string, filename: string): Promise<string> {
-  // Download image from URL (e.g. DALL·E)
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to download image: ${response.statusText}`);
-  
-  const arrayBuffer = await response.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
+export async function saveBase64Image(b64Data: string, storyId: string, filename: string): Promise<string> {
+  const buffer = Buffer.from(b64Data, 'base64');
   const storagePath = `${storyId}/${filename}`;
 
   // Upload to Supabase Storage (upsert to overwrite if exists)

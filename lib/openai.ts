@@ -191,14 +191,14 @@ Do NOT include any text or words in the image.`;
   }
 
   const response = await openai.images.generate({
-    model: 'dall-e-3',
+    model: 'gpt-image-1',
     prompt: fullPrompt,
-    n: 1,
     size: '1024x1024',
-    quality: 'standard',
+    quality: 'medium',
   });
 
-  return response.data?.[0]?.url || '';
+  // gpt-image-1 returns base64-encoded image data (no URL)
+  return response.data?.[0]?.b64_json || '';
 }
 
 export async function syncImageDescriptions(
@@ -256,14 +256,14 @@ export async function generateCoverImage(title: string, description: string, cat
     }
   }
   const response = await openai.images.generate({
-    model: 'dall-e-3',
+    model: 'gpt-image-1',
     prompt: `Vivid, colorful children's storybook cover illustration of fictional cartoon characters, eye-catching, cartoon style for ages 5-8. 
     Title: "${safeTitle}". Story about: ${safeDescription}. Category: ${category}. 
     Make it vibrant and appealing to young readers. Do NOT include any text in the image.`,
-    n: 1,
     size: '1024x1024',
-    quality: 'standard',
+    quality: 'medium',
   });
 
-  return response.data?.[0]?.url || '';
+  // gpt-image-1 returns base64-encoded image data (no URL)
+  return response.data?.[0]?.b64_json || '';
 }

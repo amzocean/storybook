@@ -122,21 +122,17 @@ IMPORTANT: Maintain perfect visual consistency. Do NOT include any text or words
   }
 
   const response = await openai.images.generate({
-    model: 'dall-e-3',
+    model: 'gpt-image-1',
     prompt: fullPrompt,
-    n: 1,
     size: '1024x1024',
-    quality: 'standard',
+    quality: 'medium',
   });
 
-  const imageUrl = response.data?.[0]?.url;
-  if (!imageUrl) throw new Error('No image URL returned from DALL-E');
+  const b64Data = response.data?.[0]?.b64_json;
+  if (!b64Data) throw new Error('No image data returned from OpenAI');
 
-  // Download and upload to Supabase
-  const imgResponse = await fetch(imageUrl);
-  if (!imgResponse.ok) throw new Error(`Failed to download image: ${imgResponse.statusText}`);
-
-  const buffer = Buffer.from(await imgResponse.arrayBuffer());
+  // Decode base64 and upload to Supabase
+  const buffer = Buffer.from(b64Data, 'base64');
   const storagePath = `${storyId}/${filename}`;
 
   const { error } = await supabase.storage
